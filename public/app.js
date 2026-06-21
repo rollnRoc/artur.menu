@@ -280,7 +280,7 @@ editInfoBtn.addEventListener('click', () => {
 
 // Load menu items from server
 function loadMenu() {
-    fetch('/api/menu')
+    fetch('api/menu')
         .then(res => res.json())
         .then(data => {
             menuData = data.filter(item => item.active);
@@ -667,7 +667,7 @@ submitOrderBtn.addEventListener('click', () => {
     submitOrderBtn.disabled = true;
     submitOrderBtn.textContent = "Gönderiliyor...";
     
-    fetch('/api/orders', {
+    fetch('api/orders', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
