@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetici Paneli - Mobil Sipariş Sistemi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+    <!-- AUTHENTICATION WALL -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <h2>Yönetici Girişi</h2>
+            <p>Sisteme erişmek için şifrenizi girin.</p>
+            <form id="loginForm">
+                <input type="password" id="adminPassword" placeholder="Şifre" required autocomplete="current-password">
+                <button type="submit" class="btn btn-primary">Giriş Yap</button>
+            </form>
+            <p class="error-msg" id="authError" style="display:none;"></p>
+        </div>
+    </div>
+
+    <!-- MAIN ADMIN PANEL -->
+    <div class="admin-wrapper" style="display:none;" id="adminWrapper">
+        
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-logo">
+                <img src="/images/logo.png" alt="Merkez Cafe Logo" class="logo-icon-img" style="height: 32px; width: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);">
+                <h2>Merkez Cafe</h2>
+                <span class="badge-panel">YÖNETİM</span>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tab="orders">
+                    <span class="nav-icon">📋</span>
+                    <span>Sipariş Takip</span>
+                </button>
+                <button class="nav-btn" data-tab="menu">
+                    <span class="nav-icon">🍔</span>
+                    <span>Menü Düzenle</span>
+                </button>
+                <button class="nav-btn" data-tab="qr">
+                    <span class="nav-icon">🔌</span>
+                    <span>Akıllı QR Kod</span>
+                </button>
+            </nav>
+            <div class="sidebar-status">
+                <div class="status-indicator">
+                    <span class="pulse-dot green" id="networkIndicator"></span>
+                    <span id="networkText">Canlı Bağlantı Aktif</span>
+                </div>
+                <button class="logout-btn" id="logoutBtn">Çıkış Yap</button>
+            </div>
+        </aside>
+
+        <!-- MAIN BODY -->
+        <main class="admin-main">
+
+            <!-- TAB 1: ORDER TRACKING -->
+            <section class="admin-tab-content active" id="tab-orders">
+                <header class="tab-header">
+                    <div class="header-titles">
+                        <h1>Sipariş Takip Ekranı</h1>
+                        <p>Koylar ve mekanlardan gelen siparişleri anlık takip edin.</p>
+                    </div>
+                    <div class="header-controls">
+                        <label class="control-checkbox">
+                            <input type="checkbox" id="hideClosedOrders" checked>
+                            <span>Kapananları Gizle</span>
+                        </label>
+                    </div>
+                </header>
+
+                <!-- Orders Grid -->
+                <div class="orders-grid" id="ordersGrid">
+                    <!-- Orders will be loaded here dynamically -->
+                </div>
+            </section>
+
+            <!-- TAB 2: MENU MANAGEMENT -->
+            <section class="admin-tab-content" id="tab-menu">
+                <header class="tab-header">
+                    <div class="header-titles">
+                        <h1>Menü Yönetimi</h1>
+                        <p>Menü fiyatlarını güncelleyin, yeni Excel yükleyin veya ürün ekleyin.</p>
+                    </div>
+                    <div class="header-actions-area">
+                        <!-- Excel Import -->
+                        <form id="excelForm" class="excel-upload-form">
+                            <label for="excelFile" class="excel-file-label">📂 Excel Seç</label>
+                            <input type="file" id="excelFile" accept=".xlsx, .xls" required style="display:none;">
+                            <span class="selected-filename" id="excelFileName">Dosya seçilmedi</span>
+                            <button type="submit" class="btn btn-primary" id="excelSubmitBtn">Menüyü Güncelle</button>
+                        </form>
+                    </div>
+                </header>
+
+                <div class="menu-management-layout">
+                    <!-- Manual Item Form -->
+                    <div class="block menu-add-block">
+                        <h3>Yeni Ürün Ekle</h3>
+                        <form id="addItemForm" class="grid-form">
+                            <div class="form-group">
+                                <label for="newItemName">Ürün Adı</label>
+                                <input type="text" id="newItemName" required placeholder="Örn. Cheeseburger">
+                            </div>
+                            <div class="form-group">
+                                <label for="newItemCategory">Kategori</label>
+                                <input type="text" id="newItemCategory" required placeholder="Örn. FASTFOOD">
+                            </div>
+                            <div class="form-group">
+                                <label for="newItemPrice">Fiyat (TL)</label>
+                                <input type="number" id="newItemPrice" required min="0" placeholder="Örn. 250">
+                            </div>
+                            <div class="form-group">
+                                <label for="newItemImage">Resim URL (İsteğe Bağlı)</label>
+                                <input type="text" id="newItemImage" placeholder="Örn. https://...">
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Ekle</button>
+                        </form>
+                    </div>
+
+                    <!-- Products Table -->
+                    <div class="menu-table-card">
+                        <div class="table-search-bar">
+                            <input type="text" id="menuSearchInput" placeholder="Menüde ürün ara...">
+                        </div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width: 5%;">ID</th>
+                                        <th style="width: 20%;">Kategori</th>
+                                        <th style="width: 25%;">Ürün Adı</th>
+                                        <th style="width: 15%;">Fiyat (TL)</th>
+                                        <th style="width: 20%;">Resim Linki</th>
+                                        <th style="width: 8%;">Aktif</th>
+                                        <th style="width: 7%;">İşlem</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="menuTableBody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: SMART QR GENERATOR -->
+            <section class="admin-tab-content" id="tab-qr">
+                <header class="tab-header">
+                    <div class="header-titles">
+                        <h1>Akıllı QR Kod Üretici</h1>
+                        <p>Koylar ve masalar için parametreli veya parametresiz QR kod etiketleri indirin.</p>
+                    </div>
+                </header>
+
+                <div class="qr-layout">
+                    <!-- Configurator -->
+                    <div class="block qr-config-block">
+                        <h3>QR Kod Konum Bilgisi</h3>
+                        
+                        <div class="form-group">
+                            <label for="qrType">QR Hedef Türü</label>
+                            <select id="qrType">
+                                <option value="genel">Genel Menü (Konumsuz)</option>
+                                <option value="mekan">Popüler Mekan</option>
+                                <option value="koy">Koyda Belirli Bir Adres</option>
+                            </select>
+                        </div>
+
+                        <!-- Sub Mekan selector -->
+                        <div class="qr-sub-section" id="qrSubMekan" style="display:none;">
+                            <div class="form-group">
+                                <label for="qrMekanSelect">Mekan Seçin</label>
+                                <select id="qrMekanSelect">
+                                    <option value="Havuzbaşı">Havuzbaşı</option>
+                                    <option value="Disko önü">Disko önü</option>
+                                    <option value="Tilki">Tilki</option>
+                                    <option value="Fener">Fener</option>
+                                    <option value="Beyaz Fırın">Beyaz Fırın</option>
+                                    <option value="Manzara çevre yolu">Manzara çevre yolu</option>
+                                    <option value="Yönetim önü">Yönetim önü</option>
+                                    <option value="Martı sahil">Martı sahil</option>
+                                    <option value="Gemi yatağı sahil">Gemi yatağı sahil</option>
+                                    <option value="Güvercin sahil">Güvercin sahil</option>
+                                    <option value="Halil büfe">Halil büfe</option>
+                                    <option value="Güvercin Market">Güvercin Market</option>
+                                    <option value="Gemi Yatağı market">Gemi Yatağı market</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Sub Koy details -->
+                        <div class="qr-sub-section" id="qrSubKoy" style="display:none;">
+                            <div class="form-group">
+                                <label for="qrKoySelect">Koy Seçin</label>
+                                <select id="qrKoySelect">
+                                    <option value="Güvercin">Güvercin Koyu</option>
+                                    <option value="Martı">Martı Koyu</option>
+                                    <option value="Gemi Yatağı">Gemi Yatağı Koyu</option>
+                                </select>
+                            </div>
+                            <div class="grid-2-col">
+                                <div class="form-group">
+                                    <label for="qrAdaInput">Ada</label>
+                                    <input type="number" id="qrAdaInput" min="1" max="300" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="qrParselInput">Parsel</label>
+                                    <input type="number" id="qrParselInput" min="1" max="9" value="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary btn-block" id="generateQrBtn">QR Kod Üret</button>
+                    </div>
+
+                    <!-- Output display -->
+                    <div class="qr-display-card">
+                        <div class="qr-result-box" id="qrResultBox" style="display:none;">
+                            <h4 id="qrResultTitle">Fener Mekanı QR Kodu</h4>
+                            <div class="qr-image-wrapper">
+                                <img id="generatedQrImage" src="" alt="QR Kod">
+                            </div>
+                            <p class="qr-link-url" id="qrLinkUrl">http://localhost:3000/?location=fener</p>
+                            <a href="" id="downloadQrBtn" target="_blank" download="qr_code.png" class="btn btn-primary">İndir (PNG)</a>
+                        </div>
+                        <div class="qr-placeholder-text" id="qrPlaceholderText">
+                            👈 Sol taraftan konumu seçip "QR Kod Üret" butonuna basın.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

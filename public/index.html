@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mobil Sipariş Sistemi</title>
+    <!-- Outfit Font for premium modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+    <div class="app-container">
+
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="logo-area">
+                <img src="images/logo.png" alt="Merkez Cafe Logo" class="logo-icon-img" style="height: 32px; width: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);">
+                <h1 class="logo-title">Merkez Cafe</h1>
+            </div>
+            <button class="cart-trigger-btn" id="cartTrigger" style="display: none;">
+                <span class="cart-icon">🛒</span>
+                <span class="cart-badge" id="cartBadge">0</span>
+            </button>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="app-main">
+
+            <!-- STEP 1: LOGIN & LOCATION SETUP -->
+            <section class="setup-section" id="setupSection">
+                <div class="setup-card">
+                    <h2 class="section-title">Hızlı Sipariş Girişi</h2>
+                    <p class="section-subtitle">Siparişinizin size ulaşabilmesi için bilgilerinizi girin.</p>
+                    
+                    <form id="setupForm" class="setup-form">
+                        <div class="form-group">
+                            <label for="userName">Adınız Soyadınız</label>
+                            <input type="text" id="userName" required placeholder="Örn. Can Yılmaz" autocomplete="name">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userPhone">Telefon Numaranız</label>
+                            <input type="tel" id="userPhone" required placeholder="05XX XXX XX XX" autocomplete="tel">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Teslimat Türü</label>
+                            <div class="delivery-toggle-grid">
+                                <label class="toggle-card active" id="deliveryOptionAddress">
+                                    <input type="radio" name="deliveryType" value="Adrese teslim" checked style="display:none;">
+                                    <span class="toggle-icon">🛵</span>
+                                    <span class="toggle-label">Adrese Teslim</span>
+                                </label>
+                                <label class="toggle-card" id="deliveryOptionPickup">
+                                    <input type="radio" name="deliveryType" value="Gel Al" style="display:none;">
+                                    <span class="toggle-icon">🛍️</span>
+                                    <span class="toggle-label">Gel Al (Paket)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- LOCATION GRID FOR ADDRESS DELIVERY -->
+                        <div class="location-details-area" id="locationDetailsArea">
+                            <div class="form-group">
+                                <label for="locationType">Bulunduğunuz Bölge</label>
+                                <select id="locationType">
+                                    <option value="Mekanlar">Popüler Mekanlar / Plajlar</option>
+                                    <option value="Koylar">Koylar (Ada / Parsel)</option>
+                                    <option value="Diğer">Diğer (Serbest Adres Tarifi)</option>
+                                </select>
+                            </div>
+
+                            <!-- Area 1: Koylar (Ada/Parsel) -->
+                            <div class="location-sub-section" id="subKoylar" style="display:none;">
+                                <div class="form-group">
+                                    <label for="koySelect">Koy Seçin</label>
+                                    <select id="koySelect">
+                                        <option value="Güvercin">Güvercin Koyu</option>
+                                        <option value="Martı">Martı Koyu</option>
+                                        <option value="Gemi Yatağı">Gemi Yatağı Koyu</option>
+                                    </select>
+                                </div>
+                                <div class="grid-2-col">
+                                    <div class="form-group">
+                                        <label for="adaInput">Ada No</label>
+                                        <select id="adaInput">
+                                            <!-- Generated dynamically 1-300 -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="parselInput">Parsel No</label>
+                                        <select id="parselInput">
+                                            <!-- Generated dynamically 1-9 -->
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Area 2: Mekanlar -->
+                            <div class="location-sub-section" id="subMekanlar">
+                                <div class="form-group">
+                                    <label for="mekanSelect">Mekan Seçin</label>
+                                    <select id="mekanSelect">
+                                        <option value="Havuzbaşı">Havuzbaşı</option>
+                                        <option value="Disko önü">Disko önü</option>
+                                        <option value="Tilki">Tilki</option>
+                                        <option value="Fener">Fener</option>
+                                        <option value="Beyaz Fırın">Beyaz Fırın</option>
+                                        <option value="Manzara çevre yolu">Manzara çevre yolu</option>
+                                        <option value="Yönetim önü">Yönetim önü</option>
+                                        <option value="Martı sahil">Martı sahil</option>
+                                        <option value="Gemi yatağı sahil">Gemi yatağı sahil</option>
+                                        <option value="Güvercin sahil">Güvercin sahil</option>
+                                        <option value="Halil büfe">Halil büfe</option>
+                                        <option value="Güvercin Market">Güvercin Market</option>
+                                        <option value="Gemi Yatağı market">Gemi Yatağı market</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Area 3: Diğer -->
+                            <div class="location-sub-section" id="subDiger" style="display:none;">
+                                <div class="form-group">
+                                    <label for="digerText">Teslimat Adresi Açıklaması</label>
+                                    <textarea id="digerText" maxlength="200" placeholder="Lütfen bulunduğunuz yeri detaylıca tarif edin... (Maks. 200 karakter)"></textarea>
+                                    <span class="textarea-count" id="digerCount">0 / 200</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Menüye Geç ➔</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- STEP 2: MENU VIEW -->
+            <section class="menu-section" id="menuSection" style="display: none;">
+                <!-- User Location Header Bar -->
+                <div class="user-info-bar">
+                    <div class="user-info-details">
+                        <span class="info-user" id="barUserName">Kullanıcı</span>
+                        <span class="info-loc" id="barUserLocation">Konum</span>
+                    </div>
+                    <button class="edit-info-btn" id="editInfoBtn">Değiştir</button>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="menu-controls">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="menuSearch" placeholder="Ürün ara...">
+                    </div>
+                </div>
+
+                <!-- Category Grid View (First Screen) -->
+                <div id="categoryGridView">
+                    <h2 class="category-grid-title">Kategoriler</h2>
+                    <div class="category-grid" id="categoryGrid">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Product List View (Second Screen, hidden initially) -->
+                <div id="productListView" style="display: none;">
+                    <div class="product-list-header">
+                        <button class="back-to-categories-btn" id="backToCategoriesBtn">← Kategoriler</button>
+                        <h2 class="active-category-title" id="activeCategoryTitle">Kategori</h2>
+                    </div>
+                    
+                    <div class="category-tabs-wrapper" style="margin-bottom: 15px;">
+                        <div class="category-tabs" id="categoryTabs">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <div class="menu-container" id="menuContainer">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- CART DRAWER / OVERLAY -->
+        <div class="cart-overlay" id="cartOverlay">
+            <div class="cart-drawer">
+                <div class="drawer-header">
+                    <h2>Sipariş Sepetiniz</h2>
+                    <button class="close-drawer-btn" id="closeDrawerBtn">✕</button>
+                </div>
+
+                <div class="drawer-body">
+                    <!-- Cart items list -->
+                    <div class="cart-items-list" id="cartItemsList">
+                        <!-- Loaded dynamically -->
+                    </div>
+
+                    <!-- Order Notes -->
+                    <div class="form-group cart-notes-group">
+                        <label for="orderNotes">Sipariş Notu (İsteğe Bağlı)</label>
+                        <textarea id="orderNotes" maxlength="200" placeholder="Buzlu olsun, ketçap fazla olsun vb. (Maks. 200 karakter)"></textarea>
+                        <span class="textarea-count" id="cartNotesCount">0 / 200</span>
+                    </div>
+
+                    <!-- Payment selection -->
+                    <div class="payment-method-area">
+                        <label>Ödeme Şekli</label>
+                        <div class="payment-toggle-grid">
+                            <label class="toggle-card active" id="payOptionCash">
+                                <input type="radio" name="paymentMethod" value="Nakit" checked style="display:none;">
+                                <span class="toggle-icon">💵</span>
+                                <span class="toggle-label">Nakit</span>
+                            </label>
+                            <label class="toggle-card" id="payOptionCard">
+                                <input type="radio" name="paymentMethod" value="Kart" style="display:none;">
+                                <span class="toggle-icon">💳</span>
+                                <span class="toggle-label">Kapıda Kredi Kartı (POS)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Prices breakdown -->
+                    <div class="cart-totals">
+                        <div class="total-row">
+                            <span>Sipariş Tutarı</span>
+                            <span id="cartSubtotal">0 TL</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Kurye / Servis Ücreti</span>
+                            <span class="free-badge">Ücretsiz</span>
+                        </div>
+                        <hr class="totals-divider">
+                        <div class="total-row grand-total">
+                            <span>Toplam Tutar</span>
+                            <span id="cartGrandTotal">0 TL</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="drawer-footer">
+                    <button class="btn btn-primary btn-block" id="submitOrderBtn">Siparişi Tamamla</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUCCESS MODAL -->
+        <div class="success-overlay" id="successOverlay">
+            <div class="success-card">
+                <div class="success-icon-wrapper">
+                    <div class="success-checkmark">✓</div>
+                </div>
+                <h2 class="success-title">Siparişiniz Alındı!</h2>
+                <p class="success-text" id="successMessage">Yarım saat içinde teslim edilecektir.</p>
+                
+                <div class="order-summary-box">
+                    <div class="summary-row">
+                        <span>Sipariş No</span>
+                        <strong id="summaryOrderNo">00000</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Toplam Tutar</span>
+                        <strong id="summaryTotal">0 TL</strong>
+                    </div>
+                    <div class="summary-row">
+                        <span>Ödeme Şekli</span>
+                        <strong id="summaryPayment">Nakit</strong>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" id="newOrderBtn">Tamam</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js?v=2"></script>
+</body>
+</html>

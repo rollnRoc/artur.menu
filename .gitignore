@@ -1,0 +1,5 @@
+node_modules/
+uploads/menu_upload.xlsx
+*.log
+.system_generated/
+*.zip
