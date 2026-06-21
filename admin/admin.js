@@ -91,7 +91,7 @@ loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const password = adminPasswordInput.value;
     
-    fetch('api/admin/login', {
+    fetch('../api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password })
@@ -150,7 +150,7 @@ function initDashboard() {
 
 // 4. SSE (Server-Sent Events) Setup
 function setupSSE() {
-    const sse = new EventSource('api/live-orders');
+    const sse = new EventSource('../api/live-orders');
     
     sse.onopen = () => {
         networkIndicator.className = "pulse-dot green";
@@ -184,7 +184,7 @@ function setupSSE() {
 
 // 5. Load & Render Orders
 function loadOrders() {
-    fetch('api/orders')
+    fetch('../api/orders')
         .then(res => res.json())
         .then(data => {
             orders = data;
@@ -328,7 +328,7 @@ hideClosedOrdersCheck.addEventListener('change', () => {
 });
 
 window.updateOrderStatus = function(orderNo, newStatus) {
-    fetch('api/orders/update-status', {
+    fetch('../api/orders/update-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderNo, status: newStatus })
@@ -347,7 +347,7 @@ window.closeOrder = function(orderNo) {
     // Toggle closed flag
     const newClosedVal = !orderObj.closed;
     
-    fetch('api/orders/update-status', {
+    fetch('../api/orders/update-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderNo, closed: newClosedVal })
@@ -361,7 +361,7 @@ window.closeOrder = function(orderNo) {
 
 // 6. Menu Management (Tab 2)
 function loadMenuItems() {
-    fetch('api/menu')
+    fetch('../api/menu')
         .then(res => res.json())
         .then(data => {
             menuItems = data;
@@ -411,7 +411,7 @@ window.saveMenuItem = function(id) {
         return;
     }
     
-    fetch('api/menu/update', {
+    fetch('../api/menu/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, category, name, price, image, active })
@@ -440,7 +440,7 @@ addItemForm.addEventListener('submit', (e) => {
     const price = document.getElementById('newItemPrice').value;
     const image = document.getElementById('newItemImage').value;
     
-    fetch('api/menu/add', {
+    fetch('../api/menu/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, category, price, image })
@@ -481,7 +481,7 @@ excelForm.addEventListener('submit', (e) => {
     submitBtn.disabled = true;
     submitBtn.textContent = "Yükleniyor...";
     
-    fetch('api/menu/upload', {
+    fetch('../api/menu/upload', {
         method: 'POST',
         body: formData
     })
