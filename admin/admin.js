@@ -347,7 +347,16 @@ window.updateOrderStatus = function(orderNo, newStatus) {
     })
     .then(res => res.json())
     .then(data => {
-        if (!data.success) alert("Durum güncellenirken hata oluştu.");
+        if (data.success) {
+            const idx = orders.findIndex(o => o.orderNo === orderNo);
+            if (idx !== -1) {
+                orders[idx].status = newStatus;
+                renderOrders();
+                checkUnapprovedAlerts();
+            }
+        } else {
+            alert("Durum güncellenirken hata oluştu.");
+        }
     })
     .catch(err => console.error("Error updating status:", err));
 };
@@ -366,7 +375,16 @@ window.closeOrder = function(orderNo) {
     })
     .then(res => res.json())
     .then(data => {
-        if (!data.success) alert("Sipariş kapatılırken hata oluştu.");
+        if (data.success) {
+            const idx = orders.findIndex(o => o.orderNo === orderNo);
+            if (idx !== -1) {
+                orders[idx].closed = newClosedVal;
+                renderOrders();
+                checkUnapprovedAlerts();
+            }
+        } else {
+            alert("Sipariş kapatılırken hata oluştu.");
+        }
     })
     .catch(err => console.error("Error closing order:", err));
 };
