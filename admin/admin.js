@@ -57,6 +57,9 @@ const authError = document.getElementById('authError');
 const logoutBtn = document.getElementById('logoutBtn');
 const networkIndicator = document.getElementById('networkIndicator');
 const networkText = document.getElementById('networkText');
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+const adminSidebar = document.querySelector('.admin-sidebar');
 
 const navBtns = document.querySelectorAll('.nav-btn');
 const tabContents = document.querySelectorAll('.admin-tab-content');
@@ -148,6 +151,12 @@ navBtns.forEach(btn => {
                 content.classList.remove('active');
             }
         });
+
+        // Close sidebar on mobile after choosing a tab
+        if (adminSidebar && adminSidebar.classList.contains('open')) {
+            adminSidebar.classList.remove('open');
+            sidebarBackdrop.classList.remove('active');
+        }
     });
 });
 
@@ -411,13 +420,13 @@ function renderMenuTable() {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${item.id}</td>
-            <td><input type="text" id="cat-${item.id}" value="${item.category}"></td>
-            <td><input type="text" id="name-${item.id}" value="${item.name}"></td>
-            <td><input type="number" id="price-${item.id}" value="${item.price}" min="0"></td>
-            <td><input type="text" id="img-${item.id}" value="${item.image || ''}" placeholder="Resim linki..."></td>
-            <td style="text-align:center;"><input type="checkbox" id="active-${item.id}" ${item.active ? "checked" : ""}></td>
-            <td>
+            <td data-label="ID">${item.id}</td>
+            <td data-label="Kategori"><input type="text" id="cat-${item.id}" value="${item.category}"></td>
+            <td data-label="Ürün Adı"><input type="text" id="name-${item.id}" value="${item.name}"></td>
+            <td data-label="Fiyat (TL)"><input type="number" id="price-${item.id}" value="${item.price}" min="0"></td>
+            <td data-label="Resim Linki"><input type="text" id="img-${item.id}" value="${item.image || ''}" placeholder="Resim linki..."></td>
+            <td data-label="Aktif" style="text-align:center;"><input type="checkbox" id="active-${item.id}" ${item.active ? "checked" : ""}></td>
+            <td data-label="İşlem">
                 <button class="btn btn-primary btn-table" onclick="saveMenuItem(${item.id})">Kaydet</button>
             </td>
         `;
@@ -585,3 +594,17 @@ generateQrBtn.addEventListener('click', () => {
 
 // Initial authentication check on load
 checkAuth();
+
+// 8. Mobile Sidebar Toggle Event Listeners
+if (hamburgerBtn && sidebarBackdrop && adminSidebar) {
+    hamburgerBtn.addEventListener('click', () => {
+        adminSidebar.classList.toggle('open');
+        sidebarBackdrop.classList.toggle('active');
+    });
+
+    sidebarBackdrop.addEventListener('click', () => {
+        adminSidebar.classList.remove('open');
+        sidebarBackdrop.classList.remove('active');
+    });
+}
+

@@ -28,6 +28,9 @@
     <!-- MAIN ADMIN PANEL -->
     <div class="admin-wrapper" style="display:none;" id="adminWrapper">
         
+        <!-- SIDEBAR BACKDROP -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+        
         <!-- SIDEBAR -->
         <aside class="admin-sidebar">
             <div class="sidebar-logo">
@@ -60,6 +63,20 @@
 
         <!-- MAIN BODY -->
         <main class="admin-main">
+
+            <!-- MOBILE HEADER -->
+            <div class="mobile-header">
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menüyü Aç/Kapat">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="mobile-logo">
+                    <img src="/images/logo.png" alt="Merkez Cafe Logo" style="height: 28px; width: 28px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent);">
+                    <span>Merkez Cafe</span>
+                </div>
+                <span class="badge-panel">YÖNETİM</span>
+            </div>
 
             <!-- TAB 1: ORDER TRACKING -->
             <section class="admin-tab-content active" id="tab-orders">

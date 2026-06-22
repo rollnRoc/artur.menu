@@ -794,3 +794,225 @@ select option {
     background-color: var(--bg-panel);
     color: var(--text-primary);
 }
+
+/* Mobile Header & Backdrop (Desktop: Hidden) */
+.mobile-header {
+    display: none;
+}
+
+.sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sidebar-backdrop.active {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.hamburger-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 6px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.hamburger-btn:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.hamburger-btn span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: var(--text-primary);
+    border-radius: 2px;
+    transition: var(--transition);
+}
+
+@media (max-width: 768px) {
+    /* 1. Mobile Header & Viewport Layout */
+    .mobile-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: var(--bg-panel);
+        border-bottom: 1px solid var(--border-color);
+        padding: 12px 16px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        z-index: 900;
+    }
+
+    .mobile-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .mobile-logo span {
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: -0.3px;
+    }
+
+    .admin-wrapper {
+        flex-direction: column;
+    }
+
+    .admin-main {
+        padding: 80px 16px 40px 16px;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    /* 2. Slide-out Sidebar on Mobile */
+    .admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        z-index: 1000;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .admin-sidebar.open {
+        left: 0;
+    }
+
+    /* 3. Stacking Grid Layouts */
+    .orders-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .menu-management-layout,
+    .qr-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .tab-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+    }
+
+    .header-actions-area {
+        width: 100%;
+    }
+
+    .excel-upload-form {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .excel-upload-form button {
+        width: 100%;
+    }
+
+    .selected-filename {
+        max-width: 100%;
+        flex-grow: 1;
+    }
+
+    .table-search-bar input {
+        max-width: 100%;
+    }
+
+    .auth-card {
+        padding: 30px 20px;
+        margin: 15px;
+    }
+
+    /* 4. Responsive Card Layout for Products Table */
+    .menu-table-card table,
+    .menu-table-card thead,
+    .menu-table-card tbody,
+    .menu-table-card th,
+    .menu-table-card td,
+    .menu-table-card tr {
+        display: block;
+    }
+
+    .menu-table-card thead {
+        display: none;
+    }
+
+    .menu-table-card tr {
+        background-color: rgba(255, 255, 255, 0.015);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        margin: 12px;
+        padding: 12px 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .menu-table-card td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+        text-align: right;
+    }
+
+    .menu-table-card td:last-child {
+        border-bottom: none;
+        justify-content: flex-end;
+        padding-top: 12px;
+    }
+
+    .menu-table-card td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--text-muted);
+        text-align: left;
+        margin-right: 15px;
+        font-size: 13px;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+
+    .menu-table-card td input[type="text"],
+    .menu-table-card td input[type="number"] {
+        max-width: 65%;
+        text-align: right;
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-table-card td input[type="checkbox"] {
+        margin-right: 0;
+    }
+
+    .btn-table {
+        width: 100%;
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+}
+
