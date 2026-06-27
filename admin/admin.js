@@ -2,6 +2,7 @@
 let orders = [];
 let menuItems = [];
 let token = sessionStorage.getItem('admin_token');
+const expandedOrders = new Set();
 
 // Helper to resolve API path dynamically based on page location
 function getApiUrl(endpoint) {
@@ -235,30 +236,23 @@ function renderOrders() {
         const dateObj = new Date(order.timestamp);
         const timeStr = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
         
-        // Location formatting
-        let locHTML = "";
+        // Location text formatting
+        let locText = "";
+        let locTextShort = "";
         if (order.deliveryType === "Gel Al") {
-            locHTML = `
-                <div class="order-card-loc">
-                    <span class="loc-label">Teslimat Türü</span>
-                    <span class="loc-val">🛍️ Gel Al (Paket)</span>
-                </div>
-            `;
+            locText = "🛍️ Gel Al (Paket)";
+            locTextShort = "🛍️ Gel Al";
         } else {
-            let locText = "";
             if (order.location.type === "Koylar") {
                 locText = `⛵ ${order.location.value.koy} Koyu (Ada: ${order.location.value.ada}, Parsel: ${order.location.value.parsel})`;
+                locTextShort = `⛵ ${order.location.value.koy} K. (A:${order.location.value.ada}/P:${order.location.value.parsel})`;
             } else if (order.location.type === "Mekanlar") {
                 locText = `📍 Ortak Mekan: ${order.location.value}`;
+                locTextShort = `📍 ${order.location.value}`;
             } else {
                 locText = `📝 Özel Tarif: ${order.location.value}`;
+                locTextShort = `📝 Özel Tarif`;
             }
-            locHTML = `
-                <div class="order-card-loc">
-                    <span class="loc-label">Teslimat Adresi</span>
-                    <span class="loc-val">${locText}</span>
-                </div>
-            `;
         }
         
         // Items listing
@@ -294,48 +288,68 @@ function renderOrders() {
             "Yola Çıktı": "status-yolacikti",
             "Teslim Edildi": "status-teslimedildi"
         };
+
+        const isExpanded = expandedOrders.has(order.orderNo);
+        const headerExpandedClass = isExpanded ? "expanded-border" : "";
+        const iconExpandedClass = isExpanded ? "expanded" : "";
+        const displayStyle = isExpanded ? "block" : "none";
         
         card.innerHTML = `
-            <div>
-                <div class="order-card-header">
+            <!-- Collapsible Summary Header -->
+            <div class="order-summary-header ${headerExpandedClass}" onclick="toggleOrderDetails('${order.orderNo}')">
+                <div class="summary-left">
                     <span class="order-no-tag">#${order.orderNo}</span>
                     <span class="order-time-tag">⏱️ ${timeStr}</span>
+                    <span class="summary-loc">${locTextShort}</span>
                 </div>
-                
-                <div class="order-card-customer">
-                    <span class="cust-name">${order.name}</span>
-                    <span class="cust-phone">📞 ${order.phone}</span>
-                </div>
-                
-                ${locHTML}
-                
-                <div class="order-card-items">
-                    ${itemsHTML}
+                <div class="summary-right">
+                    <span class="summary-total">${order.totalPrice} TL</span>
+                    <span class="summary-status-badge ${statusMap[order.status]}">${order.status}</span>
+                    <span class="collapse-icon ${iconExpandedClass}">▼</span>
                 </div>
             </div>
             
-            <div>
-                ${notesHTML}
-                
-                <div class="order-card-totals">
-                    <div class="total-display-row">
-                        <span class="pay-method">${order.paymentMethod === "Nakit" ? "💵 Nakit" : "💳 Kapıda POS"}</span>
-                        <span class="total-val">${order.totalPrice} TL</span>
+            <!-- Collapsible Detailed Content -->
+            <div class="order-details-content" id="details-${order.orderNo}" style="display: ${displayStyle};">
+                <div>
+                    <div class="order-card-customer">
+                        <span class="cust-name">${order.name}</span>
+                        <span class="cust-phone">📞 ${order.phone}</span>
+                    </div>
+                    
+                    <div class="order-card-loc">
+                        <span class="loc-label">${order.deliveryType === "Gel Al" ? "Teslimat Türü" : "Teslimat Adresi"}</span>
+                        <span class="loc-val">${locText}</span>
+                    </div>
+                    
+                    <div class="order-card-items">
+                        ${itemsHTML}
                     </div>
                 </div>
                 
-                <div class="order-card-status">
-                    <label style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-muted);">Sipariş Statüsü</label>
-                    <select class="status-dropdown ${statusMap[order.status]}" onchange="updateOrderStatus('${order.orderNo}', this.value)">
-                        <option value="Alındı" ${order.status === "Alındı" ? "selected" : ""}>1. Alındı</option>
-                        <option value="Onaylandı" ${order.status === "Onaylandı" ? "selected" : ""}>2. Onaylandı</option>
-                        <option value="Hazır" ${order.status === "Hazır" ? "selected" : ""}>3. Hazır</option>
-                        <option value="Yola Çıktı" ${order.status === "Yola Çıktı" ? "selected" : ""}>4. Yola Çıktı</option>
-                        <option value="Teslim Edildi" ${order.status === "Teslim Edildi" ? "selected" : ""}>5. Teslim Edildi</option>
-                    </select>
+                <div>
+                    ${notesHTML}
                     
-                    <div class="card-actions">
-                        <button class="btn btn-close btn-card-action" onclick="closeOrder('${order.orderNo}')">${order.closed ? "Geri Aç" : "Siparişi Kapat"}</button>
+                    <div class="order-card-totals">
+                        <div class="total-display-row">
+                            <span class="pay-method">${order.paymentMethod === "Nakit" ? "💵 Nakit" : "💳 Kapıda POS"}</span>
+                            <span class="total-val">${order.totalPrice} TL</span>
+                        </div>
+                    </div>
+                    
+                    <div class="order-card-status">
+                        <label style="font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-muted);">Sipariş Statüsü</label>
+                        <select class="status-dropdown ${statusMap[order.status]}" onchange="updateOrderStatus('${order.orderNo}', this.value)">
+                            <option value="Alındı" ${order.status === "Alındı" ? "selected" : ""}>1. Alındı</option>
+                            <option value="Onaylandı" ${order.status === "Onaylandı" ? "selected" : ""}>2. Onaylandı</option>
+                            <option value="Hazır" ${order.status === "Hazır" ? "selected" : ""}>3. Hazır</option>
+                            <option value="Yola Çıktı" ${order.status === "Yola Çıktı" ? "selected" : ""}>4. Yola Çıktı</option>
+                            <option value="Teslim Edildi" ${order.status === "Teslim Edildi" ? "selected" : ""}>5. Teslim Edildi</option>
+                        </select>
+                        
+                        <div class="card-actions">
+                            <button class="btn btn-close btn-card-action" onclick="closeOrder('${order.orderNo}')">${order.closed ? "Geri Aç" : "Siparişi Kapat"}</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -343,6 +357,26 @@ function renderOrders() {
         ordersGrid.appendChild(card);
     });
 }
+
+window.toggleOrderDetails = function(orderNo) {
+    const detailsDiv = document.getElementById(`details-${orderNo}`);
+    if (!detailsDiv) return;
+    const card = detailsDiv.closest('.order-card');
+    const header = card.querySelector('.order-summary-header');
+    const icon = card.querySelector('.collapse-icon');
+    
+    if (expandedOrders.has(orderNo)) {
+        expandedOrders.delete(orderNo);
+        detailsDiv.style.display = 'none';
+        header.classList.remove('expanded-border');
+        icon.classList.remove('expanded');
+    } else {
+        expandedOrders.add(orderNo);
+        detailsDiv.style.display = 'block';
+        header.classList.add('expanded-border');
+        icon.classList.add('expanded');
+    }
+};
 
 hideClosedOrdersCheck.addEventListener('change', () => {
     renderOrders();

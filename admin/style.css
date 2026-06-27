@@ -330,21 +330,22 @@ input, select, textarea, button {
 /* Tab 1: Orders Grid & Cards */
 .orders-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 24px;
+    grid-template-columns: 1fr;
+    gap: 16px;
 }
 
 .order-card {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    padding: 20px;
+    padding: 0;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     position: relative;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
     transition: var(--transition);
+    overflow: hidden;
 }
 
 /* Flashing highlight for new order */
@@ -923,6 +924,7 @@ select option {
 
     .header-actions-area {
         width: 100%;
+        align-items: center !important;
     }
 
     .excel-upload-form {
@@ -1013,6 +1015,136 @@ select option {
         width: 100%;
         padding: 8px 16px;
         font-size: 13px;
+    }
+}
+
+/* Order Summary List Collapsible Styles */
+.order-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 16px 20px;
+    background-color: rgba(255, 255, 255, 0.015);
+    transition: var(--transition);
+    user-select: none;
+}
+
+.order-summary-header:hover {
+    background-color: rgba(255, 255, 255, 0.04);
+}
+
+.order-summary-header.expanded-border {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.summary-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.summary-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.summary-loc {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.summary-total {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.summary-status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border: 1px solid transparent;
+}
+
+.summary-status-badge.status-alindi {
+    background-color: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.3);
+    color: var(--primary);
+}
+
+.summary-status-badge.status-onaylandi {
+    background-color: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: var(--warning);
+}
+
+.summary-status-badge.status-hazir {
+    background-color: rgba(59, 130, 246, 0.12);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: var(--info);
+}
+
+.summary-status-badge.status-yolacikti {
+    background-color: rgba(139, 92, 246, 0.12);
+    border-color: rgba(139, 92, 246, 0.3);
+    color: #8b5cf6;
+}
+
+.summary-status-badge.status-teslimedildi {
+    background-color: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: var(--success);
+}
+
+.collapse-icon {
+    font-size: 11px;
+    color: var(--text-muted);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-block;
+}
+
+.collapse-icon.expanded {
+    transform: rotate(180deg);
+    color: var(--accent);
+}
+
+.order-details-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    padding: 20px;
+    animation: fadeIn 0.25s ease-out;
+}
+
+@media (max-width: 768px) {
+    .order-details-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .order-summary-header {
+        padding: 12px 16px;
+    }
+    
+    .summary-left {
+        gap: 8px;
+    }
+    
+    .summary-right {
+        gap: 8px;
+    }
+    
+    .summary-loc {
+        font-size: 13px;
+        width: 100%;
+        margin-top: 4px;
     }
 }
 

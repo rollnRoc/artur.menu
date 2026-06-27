@@ -106,7 +106,7 @@
                         <h1>Menü Yönetimi</h1>
                         <p>Menü fiyatlarını güncelleyin, yeni Excel yükleyin veya ürün ekleyin.</p>
                     </div>
-                    <div class="header-actions-area">
+                    <div class="header-actions-area" style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                         <!-- Excel Import -->
                         <form id="excelForm" class="excel-upload-form">
                             <label for="excelFile" class="excel-file-label">📂 Excel Seç</label>
@@ -114,6 +114,7 @@
                             <span class="selected-filename" id="excelFileName">Dosya seçilmedi</span>
                             <button type="submit" class="btn btn-primary" id="excelSubmitBtn">Menüyü Güncelle</button>
                         </form>
+                        <a href="Ornek_Menu.xlsx" download class="sample-excel-link" style="font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500;">📋 Örnek Excel Şablonunu İndir</a>
                     </div>
                 </header>
 
