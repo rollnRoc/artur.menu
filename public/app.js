@@ -825,8 +825,8 @@ function updateTrackerUI(status) {
     // Update progress line width
     const trackerProgressLine = document.getElementById('trackerProgressLine');
     if (trackerProgressLine) {
-        const percent = (activeIdx / (stepsList.length - 1)) * 100;
-        trackerProgressLine.style.width = `${percent}%`;
+        const fraction = activeIdx / (stepsList.length - 1);
+        trackerProgressLine.style.width = `calc((100% - 30px) * ${fraction})`;
     }
     
     stepsList.forEach((step, idx) => {
