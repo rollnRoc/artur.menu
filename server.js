@@ -273,6 +273,27 @@ app.post('/api/orders/update-status', (req, res) => {
   }
 });
 
+// Get Single Order Status
+app.get('/api/orders/status/:orderNo', (req, res) => {
+  const { orderNo } = req.params;
+  const db = readDB();
+  const order = db.orders.find(o => o.orderNo === orderNo);
+  if (order) {
+    res.json({
+      success: true,
+      orderNo: order.orderNo,
+      status: order.status,
+      closed: order.closed,
+      deliveryType: order.deliveryType,
+      totalPrice: order.totalPrice,
+      paymentMethod: order.paymentMethod
+    });
+  } else {
+    res.status(404).json({ success: false, message: "Sipariş bulunamadı" });
+  }
+});
+
+
 // Upload Excel Menu (Merge to preserve images)
 app.post('/api/menu/upload', upload.single('excel'), (req, res) => {
   if (!req.file) {

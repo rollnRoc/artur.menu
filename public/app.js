@@ -685,6 +685,9 @@ submitOrderBtn.addEventListener('click', () => {
             summaryTotal.textContent = `${data.totalPrice} TL`;
             summaryPayment.textContent = paymentMethod === "Nakit" ? "Nakit" : "Kapıda POS";
             
+            // Start tracking order status
+            startOrderTracking(data.orderNo);
+            
             // Show Success Overlay
             successOverlay.classList.add('open');
             cartOverlay.classList.remove('open');
@@ -715,6 +718,147 @@ newOrderBtn.addEventListener('click', () => {
 initDropdowns();
 loadSavedProfile();
 parseUrlParams();
+initActiveOrderTracking();
+
+// Order Tracking System
+let activeOrderPollingInterval = null;
+const activeOrderBanner = document.getElementById('activeOrderBanner');
+const bannerStatusText = document.getElementById('bannerStatusText');
+const bannerTrackBtn = document.getElementById('bannerTrackBtn');
+
+const stepsList = ["Alındı", "Onaylandı", "Hazır", "Yola Çıktı", "Teslim Edildi"];
+
+function startOrderTracking(orderNo) {
+    if (!orderNo) return;
+    
+    // Save to local storage as active order
+    localStorage.setItem('artur_active_order', orderNo);
+    
+    // Initial fetch
+    checkActiveOrderStatus(orderNo);
+    
+    // Set up polling interval (every 10 seconds)
+    if (activeOrderPollingInterval) clearInterval(activeOrderPollingInterval);
+    activeOrderPollingInterval = setInterval(() => {
+        checkActiveOrderStatus(orderNo);
+    }, 10000);
+}
+
+function checkActiveOrderStatus(orderNo) {
+    fetch(`api/orders/status/${orderNo}`)
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Order not found or deleted");
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // If order is closed/archived, stop tracking
+                if (data.closed) {
+                    stopOrderTracking();
+                    return;
+                }
+                
+                // Update tracker UI inside success modal
+                updateTrackerUI(data.status);
+                
+                // Update floating banner UI
+                if (bannerStatusText) bannerStatusText.textContent = `Durum: ${data.status}`;
+                if (activeOrderBanner) activeOrderBanner.style.display = 'flex';
+            }
+        })
+        .catch(err => {
+            console.warn("Order tracking error:", err);
+            // Hide tracking if order doesn't exist
+            stopOrderTracking();
+        });
+}
+
+function stopOrderTracking() {
+    if (activeOrderPollingInterval) {
+        clearInterval(activeOrderPollingInterval);
+        activeOrderPollingInterval = null;
+    }
+    localStorage.removeItem('artur_active_order');
+    if (activeOrderBanner) activeOrderBanner.style.display = 'none';
+}
+
+function updateTrackerUI(status) {
+    const activeIdx = stepsList.indexOf(status);
+    if (activeIdx === -1) return;
+    
+    // Update progress line width
+    const trackerProgressLine = document.getElementById('trackerProgressLine');
+    if (trackerProgressLine) {
+        const percent = (activeIdx / (stepsList.length - 1)) * 100;
+        trackerProgressLine.style.width = `${percent}%`;
+    }
+    
+    stepsList.forEach((step, idx) => {
+        const stepKey = normalizeCategoryKey(step); // alindi, onaylandi, hazir, yolacikti, teslimedildi
+        const stepEl = document.getElementById(`step-${stepKey}`);
+        if (!stepEl) return;
+        
+        const dot = stepEl.querySelector('.step-dot');
+        
+        if (idx < activeIdx) {
+            stepEl.className = "tracker-step completed";
+            if (dot) dot.textContent = "✓";
+        } else if (idx === activeIdx) {
+            stepEl.className = "tracker-step active";
+            if (dot) dot.textContent = idx + 1;
+        } else {
+            stepEl.className = "tracker-step";
+            if (dot) dot.textContent = idx + 1;
+        }
+    });
+    
+    // Update text description based on status
+    const successMessage = document.getElementById('successMessage');
+    if (successMessage) {
+        if (status === "Alındı") {
+            successMessage.textContent = "Siparişiniz kafeye ulaştı, onay bekleniyor.";
+        } else if (status === "Onaylandı") {
+            successMessage.textContent = "Siparişiniz onaylandı, hazırlanıyor.";
+        } else if (status === "Hazır") {
+            successMessage.textContent = "Siparişiniz hazırlandı, teslimat bekliyor.";
+        } else if (status === "Yola Çıktı") {
+            successMessage.textContent = "Kuryemiz yola çıktı, geliyor!";
+        } else if (status === "Teslim Edildi") {
+            successMessage.textContent = "Siparişiniz başarıyla teslim edildi. Afiyet olsun!";
+        }
+    }
+}
+
+function initActiveOrderTracking() {
+    const activeOrderNo = localStorage.getItem('artur_active_order');
+    if (activeOrderNo) {
+        startOrderTracking(activeOrderNo);
+    }
+}
+
+// Banner click to open tracking modal
+if (bannerTrackBtn) {
+    bannerTrackBtn.addEventListener('click', () => {
+        const activeOrderNo = localStorage.getItem('artur_active_order');
+        if (activeOrderNo) {
+            // Fetch status once immediately to populate summary
+            fetch(`api/orders/status/${activeOrderNo}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        summaryOrderNo.textContent = data.orderNo;
+                        summaryTotal.textContent = `${data.totalPrice} TL`;
+                        summaryPayment.textContent = data.paymentMethod === "Nakit" ? "Nakit" : "Kapıda POS";
+                        
+                        updateTrackerUI(data.status);
+                        successOverlay.classList.add('open');
+                    }
+                });
+        }
+    });
+}
 
 // Local file protocol warning for CORS / local file restrictions
 if (window.location.protocol === 'file:') {

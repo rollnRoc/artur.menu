@@ -1007,3 +1007,164 @@ select option {
     min-height: unset;
     gap: 8px;
 }
+
+/* Order Status Tracker Styles */
+.order-status-tracker {
+    margin: 24px 0 16px 0;
+    padding: 10px 0;
+    position: relative;
+}
+
+.tracker-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+}
+
+.tracker-steps::before {
+    content: '';
+    position: absolute;
+    top: 15px; /* middle of 30px dot */
+    left: 15px;
+    right: 15px;
+    height: 3px;
+    background-color: var(--bg-card);
+    z-index: 1;
+}
+
+.tracker-progress-line {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    height: 3px;
+    background-color: var(--success);
+    z-index: 2;
+    transition: width 0.4s ease;
+    width: 0%;
+}
+
+.tracker-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 3;
+    width: 54px;
+}
+
+.step-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: var(--bg-card);
+    border: 3px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.tracker-step.completed .step-dot {
+    background-color: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.tracker-step.active .step-dot {
+    background-color: var(--bg-panel);
+    border-color: var(--accent);
+    color: var(--accent);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+    transform: scale(1.1);
+}
+
+.step-label {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 8px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.tracker-step.active .step-label {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.tracker-step.completed .step-label {
+    color: var(--success);
+}
+
+/* Floating Order Tracking Banner */
+.floating-tracking-banner {
+    position: fixed;
+    bottom: 80px; /* Above the cart trigger */
+    left: 16px;
+    right: 16px;
+    background: rgba(31, 41, 55, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 800;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.banner-icon {
+    font-size: 24px;
+}
+
+.banner-text-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.banner-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.banner-status-text {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.banner-action-btn {
+    background-color: var(--primary);
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.banner-action-btn:hover {
+    background-color: var(--primary-dark);
+}
+

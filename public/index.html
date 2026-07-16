@@ -247,6 +247,18 @@
             </div>
         </div>
 
+        <!-- FLOATING ORDER TRACKING BANNER -->
+        <div class="floating-tracking-banner" id="activeOrderBanner" style="display: none;">
+            <div class="banner-content">
+                <span class="banner-icon">🛵</span>
+                <div class="banner-text-details">
+                    <span class="banner-title">Aktif Sipariş Takip Ediliyor</span>
+                    <span class="banner-status-text" id="bannerStatusText">Statü: Alındı</span>
+                </div>
+            </div>
+            <button class="banner-action-btn" id="bannerTrackBtn">Siparişi İzle</button>
+        </div>
+
         <!-- SUCCESS MODAL -->
         <div class="success-overlay" id="successOverlay">
             <div class="success-card">
@@ -256,6 +268,33 @@
                 <h2 class="success-title">Siparişiniz Alındı!</h2>
                 <p class="success-text" id="successMessage">Yarım saat içinde teslim edilecektir.</p>
                 
+                <!-- Status Tracker UI -->
+                <div class="order-status-tracker">
+                    <div class="tracker-steps">
+                        <div class="tracker-progress-line" id="trackerProgressLine"></div>
+                        <div class="tracker-step" id="step-alindi">
+                            <div class="step-dot">1</div>
+                            <span class="step-label">Alındı</span>
+                        </div>
+                        <div class="tracker-step" id="step-onaylandi">
+                            <div class="step-dot">2</div>
+                            <span class="step-label">Onaylandı</span>
+                        </div>
+                        <div class="tracker-step" id="step-hazir">
+                            <div class="step-dot">3</div>
+                            <span class="step-label">Hazırlanıyor</span>
+                        </div>
+                        <div class="tracker-step" id="step-yolacikti">
+                            <div class="step-dot">4</div>
+                            <span class="step-label">Yolda</span>
+                        </div>
+                        <div class="tracker-step" id="step-teslimedildi">
+                            <div class="step-dot">5</div>
+                            <span class="step-label">Teslimat</span>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="order-summary-box">
                     <div class="summary-row">
                         <span>Sipariş No</span>
