@@ -141,6 +141,9 @@ function loadSavedProfile() {
             userNameInput.value = data.name || "";
             userPhoneInput.value = data.phone || "";
             
+            // Set global profile state immediately
+            userProfile = data;
+            
             if (data.deliveryType) {
                 document.querySelector(`input[name="deliveryType"][value="${data.deliveryType}"]`).checked = true;
                 updateDeliveryTypeUI(data.deliveryType);
@@ -159,6 +162,11 @@ function loadSavedProfile() {
                 } else if (data.location.type === "Diğer") {
                     digerText.value = data.location.value;
                 }
+            }
+            
+            // Sync active order from server history if phone exists
+            if (data.phone) {
+                syncActiveOrderFromServer(data.phone);
             }
         } catch (e) {
             console.error("Local storage read error:", e);
@@ -243,6 +251,9 @@ setupForm.addEventListener('submit', (e) => {
     
     // Save to Local Storage
     localStorage.setItem('artur_siparis_profile', JSON.stringify(userProfile));
+    
+    // Sync active order from server history
+    syncActiveOrderFromServer(phone);
     
     // Update Header Bar
     barUserName.textContent = name;
@@ -782,6 +793,29 @@ function stopOrderTracking() {
     }
     localStorage.removeItem('artur_active_order');
     if (activeOrderBanner) activeOrderBanner.style.display = 'none';
+}
+
+function syncActiveOrderFromServer(phone) {
+    if (!phone) return;
+    
+    fetch(`api/orders/history?phone=${encodeURIComponent(phone)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.length > 0) {
+                // Find the newest order that is NOT closed
+                const activeOrder = data.find(o => !o.closed);
+                if (activeOrder) {
+                    // Restore active order tracking
+                    startOrderTracking(activeOrder.orderNo);
+                } else {
+                    // No active orders, clear local storage
+                    stopOrderTracking();
+                }
+            } else {
+                stopOrderTracking();
+            }
+        })
+        .catch(err => console.warn("Active order sync error:", err));
 }
 
 function updateTrackerUI(status) {
