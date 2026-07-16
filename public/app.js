@@ -725,12 +725,6 @@ newOrderBtn.addEventListener('click', () => {
     renderProducts(); // refresh menu item counts
 });
 
-// Initialize on page load
-initDropdowns();
-loadSavedProfile();
-parseUrlParams();
-initActiveOrderTracking();
-
 // Order Tracking System
 let activeOrderPollingInterval = null;
 const activeOrderBanner = document.getElementById('activeOrderBanner');
@@ -980,6 +974,12 @@ function renderHistoryList() {
             historyItemsBody.innerHTML = `<div style="text-align:center; padding:30px; color:var(--danger);">Siparişler yüklenirken hata oluştu.</div>`;
         });
 }
+
+// Initialize on page load
+initDropdowns();
+loadSavedProfile();
+parseUrlParams();
+initActiveOrderTracking();
 
 // Local file protocol warning for CORS / local file restrictions
 if (window.location.protocol === 'file:') {
