@@ -1038,7 +1038,7 @@ select option {
     top: 15px;
     left: 15px;
     height: 3px;
-    background-color: var(--success);
+    background-color: var(--accent);
     z-index: 2;
     transition: width 0.4s ease;
     width: 0%;
@@ -1104,8 +1104,10 @@ select option {
 .floating-tracking-banner {
     position: fixed;
     bottom: 80px; /* Above the cart trigger */
-    left: 16px;
-    right: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 448px; /* 480px minus 32px margins */
     background: rgba(31, 41, 55, 0.95);
     backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
@@ -1120,8 +1122,8 @@ select option {
 }
 
 @keyframes slideUp {
-    from { transform: translateY(100px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from { transform: translate(-50%, 100px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
 }
 
 .banner-content {
@@ -1234,5 +1236,21 @@ select option {
 .history-badge.badge-hazir { background: rgba(16, 185, 129, 0.15); color: var(--success); }
 .history-badge.badge-yolacikti { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
 .history-badge.badge-teslimedildi { background: rgba(16, 185, 129, 0.25); color: var(--success); }
+
+.history-delete-btn {
+    background: none;
+    border: none;
+    color: var(--danger);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+}
+
+.history-delete-btn:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+}
 
 

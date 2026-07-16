@@ -202,6 +202,11 @@ function setupSSE() {
             }
         }
     };
+    
+    // Fallback polling loop (every 15 seconds) to ensure admin receives updates even if SSE is buffered/blocked by IIS/Plesk
+    setInterval(() => {
+        loadOrders();
+    }, 15000);
 }
 
 // 5. Load & Render Orders

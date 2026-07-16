@@ -890,12 +890,30 @@ if (bannerTrackBtn) {
 
 // Order History System
 const historyBtn = document.getElementById('historyBtn');
+const setupHistoryBtn = document.getElementById('setupHistoryBtn');
 const historyOverlay = document.getElementById('historyOverlay');
 const closeHistoryDrawerBtn = document.getElementById('closeHistoryDrawerBtn');
 const historyItemsBody = document.getElementById('historyItemsBody');
 
 if (historyBtn) {
     historyBtn.addEventListener('click', () => {
+        renderHistoryList();
+        historyOverlay.classList.add('open');
+    });
+}
+
+if (setupHistoryBtn) {
+    setupHistoryBtn.addEventListener('click', () => {
+        const phone = userPhoneInput.value.trim();
+        if (!phone) {
+            alert("Lütfen geçmiş siparişlerinizi görmek için telefon numaranızı girin.");
+            userPhoneInput.focus();
+            return;
+        }
+        // Save minimal state for query
+        userProfile.phone = phone;
+        userProfile.name = userNameInput.value.trim() || "Kullanıcı";
+        
         renderHistoryList();
         historyOverlay.classList.add('open');
     });
@@ -925,12 +943,22 @@ function renderHistoryList() {
         .then(data => {
             historyItemsBody.innerHTML = "";
             
-            if (data.length === 0) {
+            // Get hidden orders
+            let hiddenOrders = [];
+            try {
+                const storedHidden = localStorage.getItem('artur_hidden_orders');
+                if (storedHidden) hiddenOrders = JSON.parse(storedHidden);
+            } catch(e) {}
+            
+            // Filter out hidden orders
+            const visibleOrders = data.filter(o => !hiddenOrders.includes(o.orderNo));
+            
+            if (visibleOrders.length === 0) {
                 historyItemsBody.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-muted);">Henüz geçmiş siparişiniz bulunmuyor.</div>`;
                 return;
             }
             
-            data.forEach(order => {
+            visibleOrders.forEach(order => {
                 const card = document.createElement('div');
                 card.className = 'history-order-card';
                 
@@ -962,7 +990,10 @@ function renderHistoryList() {
                     </div>
                     <div class="history-card-footer">
                         <span class="history-badge badge-${statusKey}">${order.status}</span>
-                        <span class="history-total">${order.totalPrice} TL</span>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="history-total">${order.totalPrice} TL</span>
+                            <button class="history-delete-btn" onclick="hideHistoryOrder('${order.orderNo}')">Sil</button>
+                        </div>
                     </div>
                 `;
                 
@@ -974,6 +1005,22 @@ function renderHistoryList() {
             historyItemsBody.innerHTML = `<div style="text-align:center; padding:30px; color:var(--danger);">Siparişler yüklenirken hata oluştu.</div>`;
         });
 }
+
+window.hideHistoryOrder = function(orderNo) {
+    if (confirm("Bu siparişi geçmişinizden silmek istediğinize emin misiniz? (Admin kayıtlarından silinmez)")) {
+        let hiddenOrders = [];
+        try {
+            const storedHidden = localStorage.getItem('artur_hidden_orders');
+            if (storedHidden) hiddenOrders = JSON.parse(storedHidden);
+        } catch(e) {}
+        
+        if (!hiddenOrders.includes(orderNo)) {
+            hiddenOrders.push(orderNo);
+            localStorage.setItem('artur_hidden_orders', JSON.stringify(hiddenOrders));
+        }
+        renderHistoryList();
+    }
+};
 
 // Initialize on page load
 initDropdowns();
