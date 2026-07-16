@@ -145,7 +145,10 @@
                         <span class="info-user" id="barUserName">Kullanıcı</span>
                         <span class="info-loc" id="barUserLocation">Konum</span>
                     </div>
-                    <button class="edit-info-btn" id="editInfoBtn">Değiştir</button>
+                    <div class="user-info-actions" style="display: flex; gap: 8px;">
+                        <button class="edit-info-btn" id="historyBtn" style="border-color: var(--primary); color: var(--primary);">Siparişlerim</button>
+                        <button class="edit-info-btn" id="editInfoBtn">Değiştir</button>
+                    </div>
                 </div>
 
                 <!-- Search & Filters -->
@@ -243,6 +246,19 @@
 
                 <div class="drawer-footer">
                     <button class="btn btn-primary btn-block" id="submitOrderBtn">Siparişi Tamamla</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY DRAWER / OVERLAY -->
+        <div class="cart-overlay" id="historyOverlay">
+            <div class="cart-drawer">
+                <div class="drawer-header">
+                    <h2>Geçmiş Siparişleriniz</h2>
+                    <button class="close-drawer-btn" id="closeHistoryDrawerBtn">✕</button>
+                </div>
+                <div class="drawer-body" id="historyItemsBody" style="padding: 16px 20px;">
+                    <!-- Loaded dynamically -->
                 </div>
             </div>
         </div>

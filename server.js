@@ -293,6 +293,33 @@ app.get('/api/orders/status/:orderNo', (req, res) => {
   }
 });
 
+// Get Order History by Phone Number
+app.get('/api/orders/history', (req, res) => {
+  const { phone } = req.query;
+  if (!phone) {
+    return res.status(400).json({ success: false, message: "Telefon numarası eksik" });
+  }
+  const cleanPhone = phone.replace(/\s+/g, '').trim();
+  const db = readDB();
+  
+  const history = db.orders
+    .filter(o => o.phone.replace(/\s+/g, '').trim() === cleanPhone)
+    .map(o => ({
+      orderNo: o.orderNo,
+      timestamp: o.timestamp,
+      items: o.items,
+      totalPrice: o.totalPrice,
+      paymentMethod: o.paymentMethod,
+      deliveryType: o.deliveryType,
+      status: o.status,
+      closed: o.closed
+    }))
+    .sort((a, b) => b.timestamp - a.timestamp);
+    
+  res.json(history);
+});
+
+
 
 // Upload Excel Menu (Merge to preserve images)
 app.post('/api/menu/upload', upload.single('excel'), (req, res) => {

@@ -860,6 +860,93 @@ if (bannerTrackBtn) {
     });
 }
 
+// Order History System
+const historyBtn = document.getElementById('historyBtn');
+const historyOverlay = document.getElementById('historyOverlay');
+const closeHistoryDrawerBtn = document.getElementById('closeHistoryDrawerBtn');
+const historyItemsBody = document.getElementById('historyItemsBody');
+
+if (historyBtn) {
+    historyBtn.addEventListener('click', () => {
+        renderHistoryList();
+        historyOverlay.classList.add('open');
+    });
+}
+
+if (closeHistoryDrawerBtn) {
+    closeHistoryDrawerBtn.addEventListener('click', () => {
+        historyOverlay.classList.remove('open');
+    });
+}
+
+if (historyOverlay) {
+    historyOverlay.addEventListener('click', (e) => {
+        if (e.target === historyOverlay) {
+            historyOverlay.classList.remove('open');
+        }
+    });
+}
+
+function renderHistoryList() {
+    if (!userProfile.phone) return;
+    
+    historyItemsBody.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">Yükleniyor...</div>`;
+    
+    fetch(`api/orders/history?phone=${encodeURIComponent(userProfile.phone)}`)
+        .then(res => res.json())
+        .then(data => {
+            historyItemsBody.innerHTML = "";
+            
+            if (data.length === 0) {
+                historyItemsBody.innerHTML = `<div style="text-align:center; padding:40px 20px; color:var(--text-muted);">Henüz geçmiş siparişiniz bulunmuyor.</div>`;
+                return;
+            }
+            
+            data.forEach(order => {
+                const card = document.createElement('div');
+                card.className = 'history-order-card';
+                
+                // Format Date
+                const date = new Date(order.timestamp);
+                const dateStr = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+                
+                // Render items inside card
+                let itemsHTML = "";
+                order.items.forEach(item => {
+                    itemsHTML += `
+                        <div class="history-item-line">
+                            <span>${item.name} (${item.quantity} adet)</span>
+                            <span>${item.price * item.quantity} TL</span>
+                        </div>
+                    `;
+                });
+                
+                // Status Badge class
+                const statusKey = normalizeCategoryKey(order.status);
+                
+                card.innerHTML = `
+                    <div class="history-card-header">
+                        <span class="history-order-no">#${order.orderNo}</span>
+                        <span class="history-order-date">${dateStr}</span>
+                    </div>
+                    <div class="history-card-body">
+                        ${itemsHTML}
+                    </div>
+                    <div class="history-card-footer">
+                        <span class="history-badge badge-${statusKey}">${order.status}</span>
+                        <span class="history-total">${order.totalPrice} TL</span>
+                    </div>
+                `;
+                
+                historyItemsBody.appendChild(card);
+            });
+        })
+        .catch(err => {
+            console.error("History fetch error:", err);
+            historyItemsBody.innerHTML = `<div style="text-align:center; padding:30px; color:var(--danger);">Siparişler yüklenirken hata oluştu.</div>`;
+        });
+}
+
 // Local file protocol warning for CORS / local file restrictions
 if (window.location.protocol === 'file:') {
     const warningDiv = document.createElement('div');
