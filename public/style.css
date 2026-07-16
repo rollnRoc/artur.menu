@@ -1069,9 +1069,9 @@ select option {
 }
 
 .tracker-step.completed .step-dot {
-    background-color: var(--success);
-    border-color: var(--success);
-    color: white;
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: #0b0f19; /* dark text color for high contrast on yellow background */
 }
 
 .tracker-step.active .step-dot {
@@ -1097,13 +1097,13 @@ select option {
 }
 
 .tracker-step.completed .step-label {
-    color: var(--success);
+    color: var(--accent);
 }
 
 /* Floating Order Tracking Banner */
 .floating-tracking-banner {
     position: fixed;
-    bottom: 80px; /* Above the cart trigger */
+    bottom: 16px; /* Positioned at the very bottom of the screen container */
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 32px);
@@ -1117,7 +1117,7 @@ select option {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 800;
+    z-index: 150; /* Placed behind overlays which have z-index: 200/300 */
     animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1251,6 +1251,26 @@ select option {
 
 .history-delete-btn:hover {
     background-color: rgba(239, 68, 68, 0.15);
+}
+
+.history-item-img {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    border: 1px solid var(--border-color);
+}
+
+.history-item-img-fallback {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
 }
 
 

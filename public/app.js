@@ -890,30 +890,12 @@ if (bannerTrackBtn) {
 
 // Order History System
 const historyBtn = document.getElementById('historyBtn');
-const setupHistoryBtn = document.getElementById('setupHistoryBtn');
 const historyOverlay = document.getElementById('historyOverlay');
 const closeHistoryDrawerBtn = document.getElementById('closeHistoryDrawerBtn');
 const historyItemsBody = document.getElementById('historyItemsBody');
 
 if (historyBtn) {
     historyBtn.addEventListener('click', () => {
-        renderHistoryList();
-        historyOverlay.classList.add('open');
-    });
-}
-
-if (setupHistoryBtn) {
-    setupHistoryBtn.addEventListener('click', () => {
-        const phone = userPhoneInput.value.trim();
-        if (!phone) {
-            alert("Lütfen geçmiş siparişlerinizi görmek için telefon numaranızı girin.");
-            userPhoneInput.focus();
-            return;
-        }
-        // Save minimal state for query
-        userProfile.phone = phone;
-        userProfile.name = userNameInput.value.trim() || "Kullanıcı";
-        
         renderHistoryList();
         historyOverlay.classList.add('open');
     });
@@ -966,13 +948,26 @@ function renderHistoryList() {
                 const date = new Date(order.timestamp);
                 const dateStr = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
                 
-                // Render items inside card
+                // Render items inside card with images
                 let itemsHTML = "";
                 order.items.forEach(item => {
+                    const menuItem = menuData.find(m => m.id === item.id || m.name === item.name);
+                    const imgHTML = menuItem && menuItem.image
+                        ? `<img src="${menuItem.image}" class="history-item-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
+                        : ``;
+                    const fallbackHTML = `<div class="history-item-img-fallback" style="${menuItem && menuItem.image ? 'display: none;' : ''}">🍽️</div>`;
+                    
                     itemsHTML += `
-                        <div class="history-item-line">
-                            <span>${item.name} (${item.quantity} adet)</span>
-                            <span>${item.price * item.quantity} TL</span>
+                        <div class="history-item-row" style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="position: relative; width: 44px; height: 44px; flex-shrink: 0;">
+                                ${imgHTML}
+                                ${fallbackHTML}
+                            </div>
+                            <div style="flex-grow: 1; min-width: 0;">
+                                <div style="font-size: 13.5px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">${item.quantity} adet x ${item.price} TL</div>
+                            </div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: var(--accent); flex-shrink: 0;">${item.price * item.quantity} TL</div>
                         </div>
                     `;
                 });
@@ -985,7 +980,7 @@ function renderHistoryList() {
                         <span class="history-order-no">#${order.orderNo}</span>
                         <span class="history-order-date">${dateStr}</span>
                     </div>
-                    <div class="history-card-body">
+                    <div class="history-card-body" style="padding: 10px 0; border-bottom: 1px dashed var(--border-color); margin-bottom: 10px;">
                         ${itemsHTML}
                     </div>
                     <div class="history-card-footer">
