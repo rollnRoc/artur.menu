@@ -1100,6 +1100,21 @@ select option {
     color: var(--accent);
 }
 
+.step-time {
+    font-size: 8.5px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 3px;
+    text-align: center;
+    white-space: nowrap;
+    display: none;
+}
+
+.tracker-step.active .step-time,
+.tracker-step.completed .step-time {
+    color: var(--text-primary);
+}
+
 /* Floating Order Tracking Banner */
 .floating-tracking-banner {
     position: fixed;

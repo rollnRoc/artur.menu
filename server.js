@@ -224,6 +224,7 @@ app.post('/api/orders', (req, res) => {
     }
   }
 
+  const orderTime = Date.now();
   const newOrder = {
     orderNo: orderNo,
     name: name.trim(),
@@ -236,7 +237,10 @@ app.post('/api/orders', (req, res) => {
     notes: notes ? notes.trim().slice(0, 200) : "",
     status: "Alındı", // Status: "Alındı" | "Onaylandı" | "Hazır" | "Yola Çıktı" | "Teslim Edildi"
     closed: false,
-    timestamp: Date.now()
+    timestamp: orderTime,
+    statusHistory: {
+      "Alındı": orderTime
+    }
   };
 
   db.orders.push(newOrder);
@@ -259,7 +263,15 @@ app.post('/api/orders/update-status', (req, res) => {
   const db = readDB();
   const index = db.orders.findIndex(o => o.orderNo === orderNo);
   if (index !== -1) {
-    if (status !== undefined) db.orders[index].status = status;
+    if (status !== undefined) {
+      db.orders[index].status = status;
+      if (!db.orders[index].statusHistory) {
+        db.orders[index].statusHistory = {
+          "Alındı": db.orders[index].timestamp
+        };
+      }
+      db.orders[index].statusHistory[status] = Date.now();
+    }
     if (closed !== undefined) db.orders[index].closed = !!closed;
     
     writeDB(db);
@@ -286,7 +298,8 @@ app.get('/api/orders/status/:orderNo', (req, res) => {
       closed: order.closed,
       deliveryType: order.deliveryType,
       totalPrice: order.totalPrice,
-      paymentMethod: order.paymentMethod
+      paymentMethod: order.paymentMethod,
+      statusHistory: order.statusHistory || { "Alındı": order.timestamp }
     });
   } else {
     res.status(404).json({ success: false, message: "Sipariş bulunamadı" });
@@ -312,7 +325,8 @@ app.get('/api/orders/history', (req, res) => {
       paymentMethod: o.paymentMethod,
       deliveryType: o.deliveryType,
       status: o.status,
-      closed: o.closed
+      closed: o.closed,
+      statusHistory: o.statusHistory || { "Alındı": o.timestamp }
     }))
     .sort((a, b) => b.timestamp - a.timestamp);
     

@@ -766,7 +766,7 @@ function checkActiveOrderStatus(orderNo) {
                 }
                 
                 // Update tracker UI inside success modal
-                updateTrackerUI(data.status);
+                updateTrackerUI(data.status, data.statusHistory);
                 
                 // Update floating banner UI
                 if (bannerStatusText) bannerStatusText.textContent = `Durum: ${data.status}`;
@@ -812,7 +812,7 @@ function syncActiveOrderFromServer(phone) {
         .catch(err => console.warn("Active order sync error:", err));
 }
 
-function updateTrackerUI(status) {
+function updateTrackerUI(status, statusHistory) {
     const activeIdx = stepsList.indexOf(status);
     if (activeIdx === -1) return;
     
@@ -839,6 +839,25 @@ function updateTrackerUI(status) {
         } else {
             stepEl.className = "tracker-step";
             if (dot) dot.textContent = idx + 1;
+        }
+        
+        // Dynamically add/update step-time element
+        let stepTimeEl = stepEl.querySelector('.step-time');
+        if (!stepTimeEl) {
+            stepTimeEl = document.createElement('span');
+            stepTimeEl.className = "step-time";
+            stepEl.appendChild(stepTimeEl);
+        }
+        
+        const timestamp = statusHistory ? statusHistory[step] : null;
+        if (timestamp) {
+            const date = new Date(timestamp);
+            const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+            stepTimeEl.textContent = timeStr;
+            stepTimeEl.style.display = "block";
+        } else {
+            stepTimeEl.textContent = "";
+            stepTimeEl.style.display = "none";
         }
     });
     
@@ -880,7 +899,7 @@ if (bannerTrackBtn) {
                         summaryTotal.textContent = `${data.totalPrice} TL`;
                         summaryPayment.textContent = data.paymentMethod === "Nakit" ? "Nakit" : "Kapıda POS";
                         
-                        updateTrackerUI(data.status);
+                        updateTrackerUI(data.status, data.statusHistory);
                         successOverlay.classList.add('open');
                     }
                 });
