@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=3">
-    <link rel="icon" href="/favicon.ico?v=3" type="image/x-icon">
+    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="icon" href="/favicon.ico?v=4" type="image/x-icon">
 </head>
 <body>
 
@@ -50,6 +50,10 @@
                 <button class="nav-btn" data-tab="qr">
                     <span class="nav-icon">🔌</span>
                     <span>Akıllı QR Kod</span>
+                </button>
+                <button class="nav-btn" data-tab="venues">
+                    <span class="nav-icon">📍</span>
+                    <span>Mekan Yönetimi</span>
                 </button>
             </nav>
             <div class="sidebar-status">
@@ -198,19 +202,7 @@
                             <div class="form-group">
                                 <label for="qrMekanSelect">Mekan Seçin</label>
                                 <select id="qrMekanSelect">
-                                    <option value="Havuzbaşı">Havuzbaşı</option>
-                                    <option value="Disko önü">Disko önü</option>
-                                    <option value="Tilki">Tilki</option>
-                                    <option value="Fener">Fener</option>
-                                    <option value="Beyaz Fırın">Beyaz Fırın</option>
-                                    <option value="Manzara çevre yolu">Manzara çevre yolu</option>
-                                    <option value="Yönetim önü">Yönetim önü</option>
-                                    <option value="Martı sahil">Martı sahil</option>
-                                    <option value="Gemi yatağı sahil">Gemi yatağı sahil</option>
-                                    <option value="Güvercin sahil">Güvercin sahil</option>
-                                    <option value="Halil büfe">Halil büfe</option>
-                                    <option value="Güvercin Market">Güvercin Market</option>
-                                    <option value="Gemi Yatağı market">Gemi Yatağı market</option>
+                                    <!-- Loaded dynamically -->
                                 </select>
                             </div>
                         </div>
@@ -257,9 +249,26 @@
                 </div>
             </section>
 
+            <!-- STEP 5: VENUES MANAGEMENT -->
+            <section class="admin-tab-content" id="tab-venues">
+                <div class="tab-header">
+                    <h3>📍 Mekan Yönetimi</h3>
+                    <p>Sipariş sistemindeki adrese teslim ortak mekan seçeneklerini düzenleyin.</p>
+                </div>
+                <div class="card" style="max-width: 600px; margin-top: 20px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 20px;">
+                    <form id="venuesForm">
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label for="venuesListInput" style="display: block; margin-bottom: 8px; font-weight: 600;">Mekan Listesi (Her satıra bir mekan ismi gelecek şekilde yazın)</label>
+                            <textarea id="venuesListInput" rows="12" style="width: 100%; padding: 12px; background: var(--bg-app); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); font-family: inherit; font-size: 13.5px; resize: vertical; line-height: 1.5;" placeholder="Örn: Havuzbaşı&#10;Disko önü&#10;Tilki"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="saveVenuesBtn">Değişiklikleri Kaydet</button>
+                    </form>
+                </div>
+            </section>
+
         </main>
     </div>
 
-    <script src="admin.js?v=3"></script>
+    <script src="admin.js?v=4"></script>
 </body>
 </html>

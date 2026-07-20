@@ -162,6 +162,20 @@ function loadSavedProfile() {
                 } else if (data.location.type === "Diğer") {
                     digerText.value = data.location.value;
                 }
+
+                // Restore GPS if present
+                if (data.location.gps) {
+                    userProfile.gps = data.location.gps;
+                    const gpsStatus = document.getElementById('gpsStatus');
+                    const gpsShareBtn = document.getElementById('gpsShareBtn');
+                    if (gpsStatus) {
+                        gpsStatus.style.display = "block";
+                        gpsStatus.textContent = `✓ GPS Konum Bilgisi Eklendi! (${userProfile.gps.lat.toFixed(4)}, ${userProfile.gps.lng.toFixed(4)})`;
+                    }
+                    if (gpsShareBtn) {
+                        gpsShareBtn.textContent = "📍 Konumu Güncelle";
+                    }
+                }
             }
             
             // Sync active order from server history if phone exists
@@ -244,10 +258,18 @@ setupForm.addEventListener('submit', (e) => {
         }
         
         location = { type, value };
+        if (userProfile.gps) {
+            location.gps = userProfile.gps;
+        }
+    } else {
+        if (userProfile.gps) delete userProfile.gps;
     }
     
     // Save to State
     userProfile = { name, phone, deliveryType, location };
+    if (location && location.gps) {
+        userProfile.gps = location.gps;
+    }
     
     // Save to Local Storage
     localStorage.setItem('artur_siparis_profile', JSON.stringify(userProfile));
@@ -274,6 +296,9 @@ setupForm.addEventListener('submit', (e) => {
     menuSection.style.display = 'block';
     cartTrigger.style.display = 'flex';
     
+    // Restore tracking banner if active
+    initActiveOrderTracking();
+    
     loadMenu();
     
     // Auto-focus search input for fast typing
@@ -287,6 +312,7 @@ editInfoBtn.addEventListener('click', () => {
     menuSection.style.display = 'none';
     setupSection.style.display = 'flex';
     cartTrigger.style.display = 'none';
+    if (activeOrderBanner) activeOrderBanner.style.display = 'none';
 });
 
 // Load menu items from server
@@ -770,7 +796,13 @@ function checkActiveOrderStatus(orderNo) {
                 
                 // Update floating banner UI
                 if (bannerStatusText) bannerStatusText.textContent = `Durum: ${data.status}`;
-                if (activeOrderBanner) activeOrderBanner.style.display = 'flex';
+                if (activeOrderBanner) {
+                    if (setupSection.style.display === 'none') {
+                        activeOrderBanner.style.display = 'flex';
+                    } else {
+                        activeOrderBanner.style.display = 'none';
+                    }
+                }
             }
         })
         .catch(err => {
@@ -1036,10 +1068,71 @@ window.hideHistoryOrder = function(orderNo) {
     }
 };
 
+let venuesData = [];
+
+function loadVenues() {
+    return fetch('api/venues')
+        .then(res => res.json())
+        .then(data => {
+            venuesData = data;
+            const mekanSelect = document.getElementById('mekanSelect');
+            if (mekanSelect) {
+                mekanSelect.innerHTML = "";
+                data.forEach(venue => {
+                    const opt = document.createElement('option');
+                    opt.value = venue;
+                    opt.textContent = venue;
+                    mekanSelect.appendChild(opt);
+                });
+            }
+        })
+        .catch(err => console.error("Error loading venues:", err));
+}
+
+// GPS Location Sharing Event Listener
+const gpsShareBtn = document.getElementById('gpsShareBtn');
+const gpsStatus = document.getElementById('gpsStatus');
+
+if (gpsShareBtn) {
+    gpsShareBtn.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            alert("Tarayıcınız GPS konum paylaşımını desteklemiyor.");
+            return;
+        }
+
+        gpsShareBtn.disabled = true;
+        gpsShareBtn.textContent = "📍 Konum Alınıyor...";
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                userProfile.gps = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                gpsShareBtn.disabled = false;
+                gpsShareBtn.textContent = "📍 Konumu Güncelle";
+                if (gpsStatus) {
+                    gpsStatus.style.display = "block";
+                    gpsStatus.textContent = `✓ GPS Konum Bilgisi Eklendi! (${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)})`;
+                }
+            },
+            (error) => {
+                gpsShareBtn.disabled = false;
+                gpsShareBtn.textContent = "📍 Konumumu Gönder (GPS Ekle)";
+                console.warn("GPS error:", error);
+                alert("Konum bilgisi alınamadı. Lütfen konum izni verdiğinizden emin olun.");
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
+    });
+}
+
 // Initialize on page load
 initDropdowns();
-loadSavedProfile();
-parseUrlParams();
+loadVenues().then(() => {
+    loadSavedProfile();
+    parseUrlParams();
+});
 initActiveOrderTracking();
 
 // Local file protocol warning for CORS / local file restrictions

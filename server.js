@@ -49,16 +49,36 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Database helper functions
+const DEFAULT_VENUES = [
+  "Havuzbaşı",
+  "Disko önü",
+  "Tilki",
+  "Fener",
+  "Beyaz Fırın",
+  "Manzara çevre yolu",
+  "Yönetim önü",
+  "Martı sahil",
+  "Gemi yatağı sahil",
+  "Güvercin sahil",
+  "Halil büfe",
+  "Güvercin Market",
+  "Gemi Yatağı market"
+];
+
 function readDB() {
   try {
     if (fs.existsSync(DB_PATH)) {
       const data = fs.readFileSync(DB_PATH, 'utf-8');
-      return JSON.parse(data);
+      const db = JSON.parse(data);
+      if (!db.venues) {
+        db.venues = DEFAULT_VENUES;
+      }
+      return db;
     }
   } catch (err) {
     console.error("Error reading database:", err);
   }
-  return { menu: [], orders: [], settings: { orderCounter: 0, lastCounterDate: "" } };
+  return { menu: [], orders: [], venues: DEFAULT_VENUES, settings: { orderCounter: 0, lastCounterDate: "" } };
 }
 
 function writeDB(data) {
@@ -108,6 +128,31 @@ app.post('/api/admin/login', (req, res) => {
   } else {
     res.status(401).json({ success: false, message: "Geçersiz şifre" });
   }
+});
+
+// Get Venues list
+app.get('/api/venues', (req, res) => {
+  const db = readDB();
+  res.json(db.venues || DEFAULT_VENUES);
+});
+
+// Update Venues list (Admin authorization check)
+app.post('/api/admin/venues', (req, res) => {
+  const token = req.headers.authorization;
+  if (token !== "admin-authenticated-token-987654") {
+    return res.status(401).json({ success: false, message: "Yetkisiz erişim" });
+  }
+
+  const { venues } = req.body;
+  if (!venues || !Array.isArray(venues)) {
+    return res.status(400).json({ success: false, message: "Geçersiz veri formatı" });
+  }
+
+  const db = readDB();
+  db.venues = venues.map(v => v.trim()).filter(Boolean);
+  writeDB(db);
+
+  res.json({ success: true, venues: db.venues });
 });
 
 // Get Menu Items

@@ -91,6 +91,9 @@ const generatedQrImage = document.getElementById('generatedQrImage');
 const qrLinkUrl = document.getElementById('qrLinkUrl');
 const downloadQrBtn = document.getElementById('downloadQrBtn');
 
+const venuesForm = document.getElementById('venuesForm');
+const venuesListInput = document.getElementById('venuesListInput');
+
 // 1. Authentication functions
 function checkAuth() {
     if (token === "admin-authenticated-token-987654") {
@@ -167,6 +170,7 @@ navBtns.forEach(btn => {
 function initDashboard() {
     loadOrders();
     loadMenuItems();
+    loadVenuesAdmin();
     setupSSE();
 }
 
@@ -260,6 +264,18 @@ function renderOrders() {
             }
         }
         
+        let gpsButtonHTML = "";
+        if (order.location && order.location.gps) {
+            const gps = order.location.gps;
+            gpsButtonHTML = `
+                <div style="margin-top: 8px;">
+                    <a href="https://www.google.com/maps/search/?api=1&query=${gps.lat},${gps.lng}" target="_blank" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; font-size: 11px; width: auto; background-color: var(--accent); color: #000; font-weight: 700; border-radius: var(--radius-sm); border: none; text-decoration: none;">
+                        📍 Haritada Göster
+                    </a>
+                </div>
+            `;
+        }
+        
         // Items listing
         let itemsHTML = "";
         order.items.forEach(item => {
@@ -325,6 +341,7 @@ function renderOrders() {
                     <div class="order-card-loc">
                         <span class="loc-label">${order.deliveryType === "Gel Al" ? "Teslimat Türü" : "Teslimat Adresi"}</span>
                         <span class="loc-val">${locText}</span>
+                        ${gpsButtonHTML}
                     </div>
                     
                     <div class="order-card-items">
@@ -630,6 +647,80 @@ generateQrBtn.addEventListener('click', () => {
     qrPlaceholderText.style.display = 'none';
     qrResultBox.style.display = 'flex';
 });
+
+// 9. Venues Management
+let adminVenuesList = [];
+
+function loadVenuesAdmin() {
+    fetch(getApiUrl('api/venues'))
+        .then(res => res.json())
+        .then(data => {
+            adminVenuesList = data;
+            if (venuesListInput) {
+                venuesListInput.value = data.join('\n');
+            }
+            
+            // Populate QR mekan select
+            if (qrMekanSelect) {
+                qrMekanSelect.innerHTML = "";
+                data.forEach(venue => {
+                    const opt = document.createElement('option');
+                    opt.value = venue;
+                    opt.textContent = venue;
+                    qrMekanSelect.appendChild(opt);
+                });
+            }
+        })
+        .catch(err => console.error("Error loading venues:", err));
+}
+
+if (venuesForm) {
+    venuesForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const rawText = venuesListInput.value;
+        const venues = rawText.split('\n')
+            .map(v => v.trim())
+            .filter(v => v.length > 0);
+            
+        const saveBtn = document.getElementById('saveVenuesBtn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = "Kaydediliyor...";
+        }
+        
+        fetch(getApiUrl('api/admin/venues'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': token
+            },
+            body: JSON.stringify({ venues })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = "Değişiklikleri Kaydet";
+            }
+            if (data.success) {
+                alert("Mekan listesi başarıyla kaydedildi.");
+                adminVenuesList = data.venues;
+                loadVenuesAdmin(); // Refresh and sync dropdowns
+            } else {
+                alert(data.message || "Kaydedilirken hata oluştu.");
+            }
+        })
+        .catch(err => {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = "Değişiklikleri Kaydet";
+            }
+            console.error("Save venues error:", err);
+            alert("Bağlantı hatası.");
+        });
+    });
+}
 
 // Initial authentication check on load
 checkAuth();
