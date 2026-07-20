@@ -344,6 +344,7 @@ app.get('/api/orders/status/:orderNo', (req, res) => {
       deliveryType: order.deliveryType,
       totalPrice: order.totalPrice,
       paymentMethod: order.paymentMethod,
+      items: order.items,
       statusHistory: order.statusHistory || { "Alındı": order.timestamp }
     });
   } else {

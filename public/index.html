@@ -8,8 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=7">
-    <link rel="icon" href="favicon.ico?v=7" type="image/x-icon">
+    <link rel="stylesheet" href="style.css?v=8">
+    <link rel="icon" href="favicon.ico?v=8" type="image/x-icon">
 </head>
 <body>
 
@@ -279,52 +279,15 @@
         <!-- SUCCESS MODAL -->
         <div class="success-overlay" id="successOverlay">
             <div class="success-card">
-                <div class="success-icon-wrapper">
+                <div class="success-icon-wrapper" id="successIconWrapper">
                     <div class="success-checkmark">✓</div>
                 </div>
-                <h2 class="success-title">Siparişiniz Alındı!</h2>
-                <p class="success-text" id="successMessage">Yarım saat içinde teslim edilecektir.</p>
+                <h2 class="success-title" id="successTitle">Siparişiniz Alındı!</h2>
+                <p class="success-text" id="successMessage">Siparişiniz kafeye ulaştı, onay bekleniyor.</p>
                 
-                <!-- Status Tracker UI -->
-                <div class="order-status-tracker">
-                    <div class="tracker-steps">
-                        <div class="tracker-progress-line" id="trackerProgressLine"></div>
-                        <div class="tracker-step" id="step-alindi">
-                            <div class="step-dot">1</div>
-                            <span class="step-label">Alındı</span>
-                        </div>
-                        <div class="tracker-step" id="step-onaylandi">
-                            <div class="step-dot">2</div>
-                            <span class="step-label">Onaylandı</span>
-                        </div>
-                        <div class="tracker-step" id="step-hazir">
-                            <div class="step-dot">3</div>
-                            <span class="step-label">Hazırlanıyor</span>
-                        </div>
-                        <div class="tracker-step" id="step-yolacikti">
-                            <div class="step-dot">4</div>
-                            <span class="step-label">Yolda</span>
-                        </div>
-                        <div class="tracker-step" id="step-teslimedildi">
-                            <div class="step-dot">5</div>
-                            <span class="step-label">Teslimat</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="order-summary-box">
-                    <div class="summary-row">
-                        <span>Sipariş No</span>
-                        <strong id="summaryOrderNo">00000</strong>
-                    </div>
-                    <div class="summary-row">
-                        <span>Toplam Tutar</span>
-                        <strong id="summaryTotal">0 TL</strong>
-                    </div>
-                    <div class="summary-row">
-                        <span>Ödeme Şekli</span>
-                        <strong id="summaryPayment">Nakit</strong>
-                    </div>
+                <!-- Dynamic Trackers List Container -->
+                <div id="trackersListContainer" style="width: 100%; max-height: 48vh; overflow-y: auto; padding-right: 4px; margin: 15px 0;">
+                    <!-- Trackers rendered dynamically here -->
                 </div>
 
                 <button class="btn btn-primary btn-block" id="newOrderBtn">Tamam</button>
@@ -333,6 +296,6 @@
 
     </div>
 
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=8"></script>
 </body>
 </html>

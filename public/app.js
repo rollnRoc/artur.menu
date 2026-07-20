@@ -56,9 +56,6 @@ const cartGrandTotal = document.getElementById('cartGrandTotal');
 const submitOrderBtn = document.getElementById('submitOrderBtn');
 
 const successOverlay = document.getElementById('successOverlay');
-const summaryOrderNo = document.getElementById('summaryOrderNo');
-const summaryTotal = document.getElementById('summaryTotal');
-const summaryPayment = document.getElementById('summaryPayment');
 const newOrderBtn = document.getElementById('newOrderBtn');
 
 // Initialize dropdowns (Ada 1-300, Parsel 1-9)
@@ -700,10 +697,14 @@ submitOrderBtn.addEventListener('click', () => {
         submitOrderBtn.textContent = "Siparişi Tamamla";
         
         if (data.success) {
-            // Setup Success Screen
-            summaryOrderNo.textContent = data.orderNo;
-            summaryTotal.textContent = `${data.totalPrice} TL`;
-            summaryPayment.textContent = paymentMethod === "Nakit" ? "Nakit" : "Kapıda POS";
+            // Setup Success Screen headers
+            const successIconWrapper = document.getElementById('successIconWrapper');
+            const successTitle = document.getElementById('successTitle');
+            const successMessage = document.getElementById('successMessage');
+            
+            if (successIconWrapper) successIconWrapper.style.display = "flex";
+            if (successTitle) successTitle.textContent = "Siparişiniz Alındı!";
+            if (successMessage) successMessage.textContent = "Siparişiniz kafeye ulaştı, onay bekleniyor.";
             
             // Start tracking order status
             startOrderTracking(data.orderNo);
@@ -753,56 +754,78 @@ const bannerTrackBtn = document.getElementById('bannerTrackBtn');
 const stepsList = ["Alındı", "Onaylandı", "Hazır", "Yola Çıktı", "Teslim Edildi"];
 
 function startOrderTracking(orderNo) {
-    if (!orderNo) return;
-    
-    // Save to local storage as active order
-    localStorage.setItem('artur_active_order', orderNo);
+    if (orderNo) {
+        let orderNos = [];
+        try {
+            const stored = localStorage.getItem('artur_active_orders');
+            if (stored) orderNos = JSON.parse(stored);
+        } catch(e) {}
+        if (!orderNos.includes(orderNo)) {
+            orderNos.push(orderNo);
+            localStorage.setItem('artur_active_orders', JSON.stringify(orderNos));
+        }
+    }
     
     // Initial fetch
-    checkActiveOrderStatus(orderNo);
+    checkActiveOrdersStatus();
     
     // Set up polling interval (every 10 seconds)
     if (activeOrderPollingInterval) clearInterval(activeOrderPollingInterval);
     activeOrderPollingInterval = setInterval(() => {
-        checkActiveOrderStatus(orderNo);
+        checkActiveOrdersStatus();
     }, 10000);
 }
 
-function checkActiveOrderStatus(orderNo) {
-    fetch(`api/orders/status/${orderNo}`)
-        .then(res => {
-            if (!res.ok) {
-                throw new Error("Order not found or deleted");
-            }
-            return res.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // If order is closed/archived, stop tracking
-                if (data.closed) {
-                    stopOrderTracking();
-                    return;
-                }
-                
-                // Update tracker UI inside success modal
-                updateTrackerUI(data.status, data.statusHistory);
-                
-                // Update floating banner UI
-                if (bannerStatusText) bannerStatusText.textContent = `Durum: ${data.status}`;
-                if (activeOrderBanner) {
-                    if (setupSection.style.display === 'none') {
-                        activeOrderBanner.style.display = 'flex';
-                    } else {
-                        activeOrderBanner.style.display = 'none';
-                    }
-                }
-            }
-        })
-        .catch(err => {
-            console.warn("Order tracking error:", err);
-            // Hide tracking if order doesn't exist
+function checkActiveOrdersStatus() {
+    const stored = localStorage.getItem('artur_active_orders');
+    let orderNos = [];
+    try {
+        if (stored) orderNos = JSON.parse(stored);
+    } catch(e) {}
+    
+    if (orderNos.length === 0) {
+        stopOrderTracking();
+        return;
+    }
+    
+    const promises = orderNos.map(orderNo => 
+        fetch(`api/orders/status/${orderNo}`)
+            .then(res => {
+                if (!res.ok) throw new Error("Not found");
+                return res.json();
+            })
+            .catch(() => null)
+    );
+    
+    Promise.all(promises).then(results => {
+        const activeOrders = results.filter(o => o && o.success && !o.closed);
+        
+        if (activeOrders.length === 0) {
             stopOrderTracking();
-        });
+            return;
+        }
+        
+        const validOrderNos = activeOrders.map(o => o.orderNo);
+        localStorage.setItem('artur_active_orders', JSON.stringify(validOrderNos));
+        
+        updateAllTrackersUI(activeOrders);
+        
+        if (activeOrderBanner) {
+            if (setupSection.style.display === 'none') {
+                activeOrderBanner.style.display = 'flex';
+            } else {
+                activeOrderBanner.style.display = 'none';
+            }
+        }
+        
+        if (bannerStatusText) {
+            if (activeOrders.length === 1) {
+                bannerStatusText.textContent = `Sipariş Durumu: ${activeOrders[0].status}`;
+            } else {
+                bannerStatusText.textContent = `${activeOrders.length} Aktif Siparişiniz Takip Ediliyor`;
+            }
+        }
+    });
 }
 
 function stopOrderTracking() {
@@ -810,7 +833,7 @@ function stopOrderTracking() {
         clearInterval(activeOrderPollingInterval);
         activeOrderPollingInterval = null;
     }
-    localStorage.removeItem('artur_active_order');
+    localStorage.removeItem('artur_active_orders');
     if (activeOrderBanner) activeOrderBanner.style.display = 'none';
 }
 
@@ -821,13 +844,12 @@ function syncActiveOrderFromServer(phone) {
         .then(res => res.json())
         .then(data => {
             if (data && data.length > 0) {
-                // Find the newest order that is NOT closed
-                const activeOrder = data.find(o => !o.closed);
-                if (activeOrder) {
-                    // Restore active order tracking
-                    startOrderTracking(activeOrder.orderNo);
+                const activeOrders = data.filter(o => !o.closed);
+                if (activeOrders.length > 0) {
+                    const orderNos = activeOrders.map(o => o.orderNo);
+                    localStorage.setItem('artur_active_orders', JSON.stringify(orderNos));
+                    startOrderTracking();
                 } else {
-                    // No active orders, clear local storage
                     stopOrderTracking();
                 }
             } else {
@@ -837,98 +859,114 @@ function syncActiveOrderFromServer(phone) {
         .catch(err => console.warn("Active order sync error:", err));
 }
 
-function updateTrackerUI(status, statusHistory) {
-    const activeIdx = stepsList.indexOf(status);
-    if (activeIdx === -1) return;
+function updateAllTrackersUI(activeOrders) {
+    const container = document.getElementById('trackersListContainer');
+    if (!container) return;
     
-    // Update progress line width
-    const trackerProgressLine = document.getElementById('trackerProgressLine');
-    if (trackerProgressLine) {
+    container.innerHTML = "";
+    
+    activeOrders.forEach(order => {
+        const card = document.createElement('div');
+        card.className = "active-tracker-card";
+        card.style.cssText = "border-bottom: 2px dashed var(--border-color); padding-bottom: 20px; margin-bottom: 20px; text-align: left;";
+        
+        const activeIdx = stepsList.indexOf(order.status);
+        
+        let stepsHTML = "";
+        stepsList.forEach((step, idx) => {
+            let stepClass = "";
+            let dotContent = idx + 1;
+            if (idx < activeIdx) {
+                stepClass = "completed";
+                dotContent = "✓";
+            } else if (idx === activeIdx) {
+                stepClass = "active";
+            }
+            
+            const timeVal = order.statusHistory ? order.statusHistory[step] : null;
+            let timeHTML = "";
+            if (timeVal) {
+                const date = new Date(timeVal);
+                timeHTML = `<span class="step-time" style="display: block;">${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}</span>`;
+            }
+            
+            stepsHTML += `
+                <div class="tracker-step ${stepClass}">
+                    <div class="step-dot">${dotContent}</div>
+                    <span class="step-label">${step}</span>
+                    ${timeHTML}
+                </div>
+            `;
+        });
+        
         const fraction = activeIdx / (stepsList.length - 1);
-        trackerProgressLine.style.width = `calc((100% - 30px) * ${fraction})`;
-    }
-    
-    stepsList.forEach((step, idx) => {
-        const stepKey = normalizeCategoryKey(step); // alindi, onaylandi, hazir, yolacikti, teslimedildi
-        const stepEl = document.getElementById(`step-${stepKey}`);
-        if (!stepEl) return;
+        const progressWidth = `calc((100% - 30px) * ${fraction})`;
         
-        const dot = stepEl.querySelector('.step-dot');
-        
-        if (idx < activeIdx) {
-            stepEl.className = "tracker-step completed";
-            if (dot) dot.textContent = "✓";
-        } else if (idx === activeIdx) {
-            stepEl.className = "tracker-step active";
-            if (dot) dot.textContent = idx + 1;
-        } else {
-            stepEl.className = "tracker-step";
-            if (dot) dot.textContent = idx + 1;
+        let itemsText = "Yükleniyor...";
+        if (order.items && order.items.length > 0) {
+            itemsText = order.items.map(item => {
+                const menuItem = menuData.find(m => m.id === item.id);
+                const name = menuItem ? menuItem.name : (item.name || `Ürün #${item.id}`);
+                return `${item.quantity}x ${name}`;
+            }).join(', ');
         }
         
-        // Dynamically add/update step-time element
-        let stepTimeEl = stepEl.querySelector('.step-time');
-        if (!stepTimeEl) {
-            stepTimeEl = document.createElement('span');
-            stepTimeEl.className = "step-time";
-            stepEl.appendChild(stepTimeEl);
-        }
+        card.innerHTML = `
+            <div style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Sipariş No: #${order.orderNo}</span>
+            </div>
+            
+            <!-- Progress Bar Tracker -->
+            <div class="order-status-tracker" style="margin-bottom: 22px;">
+                <div class="tracker-steps" style="position: relative; display: flex; justify-content: space-between; align-items: center; z-index: 2;">
+                    <div class="tracker-progress-line" style="position: absolute; top: 15px; left: 15px; height: 3px; background-color: var(--border-color); z-index: -1; width: calc(100% - 30px);">
+                        <div style="height: 100%; background-color: var(--accent); width: ${progressWidth}; transition: width 0.3s ease;"></div>
+                    </div>
+                    ${stepsHTML}
+                </div>
+            </div>
+
+            <!-- Summary Details Box -->
+            <div class="order-summary-box" style="margin-top: 15px; background: var(--bg-panel); border-radius: var(--radius-sm); padding: 12px;">
+                <div class="summary-row" style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-primary);">
+                    <span>Sipariş İçeriği</span>
+                    <strong style="text-align: right; max-width: 60%; word-break: break-word; color: var(--text-primary);">${itemsText}</strong>
+                </div>
+                <div class="summary-row" style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px; color: var(--text-primary);">
+                    <span>Toplam Tutar</span>
+                    <strong style="color: var(--accent);">${order.totalPrice} TL</strong>
+                </div>
+                <div class="summary-row" style="display: flex; justify-content: space-between; font-size: 13px; color: var(--text-primary);">
+                    <span>Ödeme Şekli</span>
+                    <strong style="color: var(--text-primary);">${order.paymentMethod === "Nakit" ? "Nakit" : "Kapıda POS"}</strong>
+                </div>
+            </div>
+        `;
         
-        const timestamp = statusHistory ? statusHistory[step] : null;
-        if (timestamp) {
-            const date = new Date(timestamp);
-            const timeStr = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-            stepTimeEl.textContent = timeStr;
-            stepTimeEl.style.display = "block";
-        } else {
-            stepTimeEl.textContent = "";
-            stepTimeEl.style.display = "none";
-        }
+        container.appendChild(card);
     });
-    
-    // Update text description based on status
-    const successMessage = document.getElementById('successMessage');
-    if (successMessage) {
-        if (status === "Alındı") {
-            successMessage.textContent = "Siparişiniz kafeye ulaştı, onay bekleniyor.";
-        } else if (status === "Onaylandı") {
-            successMessage.textContent = "Siparişiniz onaylandı, hazırlanıyor.";
-        } else if (status === "Hazır") {
-            successMessage.textContent = "Siparişiniz hazırlandı, teslimat bekliyor.";
-        } else if (status === "Yola Çıktı") {
-            successMessage.textContent = "Kuryemiz yola çıktı, geliyor!";
-        } else if (status === "Teslim Edildi") {
-            successMessage.textContent = "Siparişiniz başarıyla teslim edildi. Afiyet olsun!";
-        }
-    }
 }
 
 function initActiveOrderTracking() {
-    const activeOrderNo = localStorage.getItem('artur_active_order');
-    if (activeOrderNo) {
-        startOrderTracking(activeOrderNo);
+    const stored = localStorage.getItem('artur_active_orders');
+    if (stored) {
+        startOrderTracking();
     }
 }
 
 // Banner click to open tracking modal
 if (bannerTrackBtn) {
     bannerTrackBtn.addEventListener('click', () => {
-        const activeOrderNo = localStorage.getItem('artur_active_order');
-        if (activeOrderNo) {
-            // Fetch status once immediately to populate summary
-            fetch(`api/orders/status/${activeOrderNo}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        summaryOrderNo.textContent = data.orderNo;
-                        summaryTotal.textContent = `${data.totalPrice} TL`;
-                        summaryPayment.textContent = data.paymentMethod === "Nakit" ? "Nakit" : "Kapıda POS";
-                        
-                        updateTrackerUI(data.status, data.statusHistory);
-                        successOverlay.classList.add('open');
-                    }
-                });
-        }
+        const successIconWrapper = document.getElementById('successIconWrapper');
+        const successTitle = document.getElementById('successTitle');
+        const successMessage = document.getElementById('successMessage');
+        
+        if (successIconWrapper) successIconWrapper.style.display = "none";
+        if (successTitle) successTitle.textContent = "Sipariş Takibi";
+        if (successMessage) successMessage.textContent = "Aktif siparişlerinizin durumunu buradan inceleyebilirsiniz.";
+        
+        checkActiveOrdersStatus();
+        successOverlay.classList.add('open');
     });
 }
 
