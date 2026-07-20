@@ -289,6 +289,26 @@ editInfoBtn.addEventListener('click', () => {
     setupSection.style.display = 'flex';
     cartTrigger.style.display = 'none';
     if (activeOrderBanner) activeOrderBanner.style.display = 'none';
+    
+    // Restore GPS UI state if tempGpsCoords is already captured
+    const gpsStatus = document.getElementById('gpsStatus');
+    const gpsShareBtn = document.getElementById('gpsShareBtn');
+    if (tempGpsCoords) {
+        if (gpsStatus) {
+            gpsStatus.style.display = "block";
+            gpsStatus.textContent = `✓ GPS Konum Bilgisi Eklendi! (${tempGpsCoords.lat.toFixed(4)}, ${tempGpsCoords.lng.toFixed(4)})`;
+        }
+        if (gpsShareBtn) {
+            gpsShareBtn.disabled = false;
+            gpsShareBtn.textContent = "📍 GPS Konumu Eklendi";
+        }
+    } else {
+        if (gpsStatus) gpsStatus.style.display = "none";
+        if (gpsShareBtn) {
+            gpsShareBtn.disabled = false;
+            gpsShareBtn.textContent = "📍 GPS Konumumu Ekle";
+        }
+    }
 });
 
 // Load menu items from server
