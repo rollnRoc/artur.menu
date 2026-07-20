@@ -7,6 +7,7 @@ let userProfile = {
     deliveryType: "Adrese teslim",
     location: null
 };
+let tempGpsCoords = null;
 
 // DOM Elements
 const setupSection = document.getElementById('setupSection');
@@ -162,20 +163,6 @@ function loadSavedProfile() {
                 } else if (data.location.type === "Diğer") {
                     digerText.value = data.location.value;
                 }
-
-                // Restore GPS if present
-                if (data.location.gps) {
-                    userProfile.gps = data.location.gps;
-                    const gpsStatus = document.getElementById('gpsStatus');
-                    const gpsShareBtn = document.getElementById('gpsShareBtn');
-                    if (gpsStatus) {
-                        gpsStatus.style.display = "block";
-                        gpsStatus.textContent = `✓ GPS Konum Bilgisi Eklendi! (${userProfile.gps.lat.toFixed(4)}, ${userProfile.gps.lng.toFixed(4)})`;
-                    }
-                    if (gpsShareBtn) {
-                        gpsShareBtn.textContent = "📍 Konumu Güncelle";
-                    }
-                }
             }
             
             // Sync active order from server history if phone exists
@@ -258,18 +245,10 @@ setupForm.addEventListener('submit', (e) => {
         }
         
         location = { type, value };
-        if (userProfile.gps) {
-            location.gps = userProfile.gps;
-        }
-    } else {
-        if (userProfile.gps) delete userProfile.gps;
     }
     
     // Save to State
     userProfile = { name, phone, deliveryType, location };
-    if (location && location.gps) {
-        userProfile.gps = location.gps;
-    }
     
     // Save to Local Storage
     localStorage.setItem('artur_siparis_profile', JSON.stringify(userProfile));
@@ -695,11 +674,15 @@ submitOrderBtn.addEventListener('click', () => {
         name: userProfile.name,
         phone: userProfile.phone,
         deliveryType: userProfile.deliveryType,
-        location: userProfile.location,
+        location: userProfile.location ? JSON.parse(JSON.stringify(userProfile.location)) : null,
         items: items.map(i => ({ id: i.id, quantity: i.quantity })),
         paymentMethod: paymentMethod,
         notes: notes
     };
+    
+    if (orderData.location && tempGpsCoords) {
+        orderData.location.gps = tempGpsCoords;
+    }
     
     submitOrderBtn.disabled = true;
     submitOrderBtn.textContent = "Gönderiliyor...";
@@ -734,6 +717,16 @@ submitOrderBtn.addEventListener('click', () => {
             updateCartUI();
             cartNotes.value = "";
             cartNotesCount.textContent = "0 / 200";
+
+            // Clear temporary GPS coords and reset UI
+            tempGpsCoords = null;
+            const gpsStatus = document.getElementById('gpsStatus');
+            const gpsShareBtn = document.getElementById('gpsShareBtn');
+            if (gpsStatus) gpsStatus.style.display = "none";
+            if (gpsShareBtn) {
+                gpsShareBtn.disabled = false;
+                gpsShareBtn.textContent = "📍 GPS Konumumu Ekle";
+            }
         } else {
             alert(data.message || "Sipariş gönderilirken hata oluştu.");
         }
@@ -1105,12 +1098,12 @@ if (gpsShareBtn) {
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                userProfile.gps = {
+                tempGpsCoords = {
                     lat: position.coords.latitude,
                     lng: position.coords.longitude
                 };
                 gpsShareBtn.disabled = false;
-                gpsShareBtn.textContent = "📍 Konumu Güncelle";
+                gpsShareBtn.textContent = "📍 GPS Konumu Eklendi";
                 if (gpsStatus) {
                     gpsStatus.style.display = "block";
                     gpsStatus.textContent = `✓ GPS Konum Bilgisi Eklendi! (${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)})`;
@@ -1118,7 +1111,7 @@ if (gpsShareBtn) {
             },
             (error) => {
                 gpsShareBtn.disabled = false;
-                gpsShareBtn.textContent = "📍 Konumumu Gönder (GPS Ekle)";
+                gpsShareBtn.textContent = "📍 GPS Konumumu Ekle";
                 console.warn("GPS error:", error);
                 alert("Konum bilgisi alınamadı. Lütfen konum izni verdiğinizden emin olun.");
             },
